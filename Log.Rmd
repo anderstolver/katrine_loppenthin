@@ -1,0 +1,54 @@
+---
+title: 'KBL: sovnprojekt'
+author: "Anders Tolver"
+date: "14 Dec 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Time log
+
+* 14/12-2017: møde på Kræftens Bekæmpelse (1 t)
+
+## Møde d. 14/12-2017
+
+40 patienter randomiseret til to gruppper (kontrol / intervention). Interventionsgrupper tilbydes superviseret træning på Glostrup Hospital 3 gange om ugen af en fysioterapeut. Det tilstræbes at alle deltager i 18 træningssessioner (typisk over 6-8 uger). Patienter inkluderes dog i analysen blot de har deltage i 12 træningssessioner.
+
+Inklusionskriterie: gigtpatienter som på baggrund af en screening (hvordan?) lider af søvnproblemer. Som udgangspunkt ekskluderes patienter med søvnapnø, men på baggrund af indsamlede data viste det sig, at nogle patienter lider af søvnapnø.
+
+Alle målinger foretages på begge patientgrupper ved baseline og post intervention 
+
+Der foretages søvnmålinger (PSG) og der indsamles data fra patienternes søvndagbøger og en række spørgeskemaer.
+
+2 kontrolpatienter gad ikke få lavet den sidste PSG. 
+
+Det primære effekt mål er et standard score for søvneeffektivitet beregnet ud fra PSG.
+
+Sekundært benyttes data fra søvndagbøger, spørgeskemaer samt en række andre mål herunder en konditest
+
+Der er en grundlæggende opfattelse af at fysisk aktivitet påvirker søvnkvaliteten, men der er få randomiserede studier på området. Katrine har dog en artikel og fysisk aktivitet og søvn for kræftpatienter(Journal of Clinical Oncology, Savard et Al).
+
+Der findes en protokol for studie, men der er næppe specificeret ret mange statistiske analyser.
+
+Spørgeskemaer om: PSQI, Træthed, Depression, Fysisk aktivitet, livskvalitet, 
+
+Katrine sender:
+
+- anonymiseret søvnrapport (skal ikke direkte bruges til andet end orientering - danner baggrund for beregning af diverse objektive søvnmål)
+- to excelark med søvnmålinger (et for baseline målinger og et for post intervention målinger)
+- to excelark med baseline data og post data (hvert excel fil indeholder et større antal faneblade - en fane per skema)
+- et excelark med to søjle: ID og beh.gruppe
+- kopier af benyttede spørgeskemaer
+- nøgleark med forklaring af variabelnavne samt angivelse af, hvilke variable der skal regnes på
+
+Anders laver i første omgang analyse af få udvalgte variable angivet i nøglearket. Det drejer sig om
+
+* opgørelse af mean+sd opdelt på tid x grupper
+* ændringer over tid inden for gruppe (est + ki + p)
+* sammeligning af ændringer over tid mellem grupper
+* summaries over relevante variable, så Katrine kan kigge på det (evt spaghetti-plots)
+
+## Kort email d. 19/3-2018
