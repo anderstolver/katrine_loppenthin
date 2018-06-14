@@ -1,15 +1,8 @@
----
-title: 'KBL: sovnprojekt'
-author: "Anders Tolver"
-date: "14 Dec 2017"
-output:
-  html_document:
-    keep_md: TRUE
----
+# KBL: sovnprojekt
+Anders Tolver  
+14 Dec 2017  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 # Time log
 
