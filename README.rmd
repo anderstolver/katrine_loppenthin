@@ -1,0 +1,16 @@
+---
+title: "Kathrine Bjerre Løppenthin - søvnprojekt"
+author: "Anders Tolver"
+date: "14 Jun 2018"
+output: 
+  html_document:
+    keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Denne fil giver overblik over arbejdet med Kathrine Bjerre Løppenthins søvnprojekt.
+
+[R markdown](Log.Rmd)
