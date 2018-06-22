@@ -7,6 +7,7 @@ Anders Tolver
 # Time log
 
 * 14/12-2017: møde på Kræftens Bekæmpelse (1 t)
+* 22/6-2018: indlæsning af data og organisering af projekt (4 t)
 
 ## Møde d. 14/12-2017
 
@@ -47,3 +48,9 @@ Anders laver i første omgang analyse af få udvalgte variable angivet i nøglea
 * summaries over relevante variable, så Katrine kan kigge på det (evt spaghetti-plots)
 
 ## Kort email d. 19/3-2018
+
+## Arbejde med data (juni 2018)
+
+rename variable fra Anamnese som anført i KBLs nøgle.
+
+Kvalitetskontrol og beregning af sumscorer for ESS samt BRAF skemaer
