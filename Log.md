@@ -8,6 +8,7 @@ Anders Tolver
 
 * 14/12-2017: møde på Kræftens Bekæmpelse (1 t)
 * 22/6-2018: indlæsning af data og organisering af projekt (4 t)
+* 25/6-2018: beregning af componentscores for PSQI (1.5 t)
 
 ## Møde d. 14/12-2017
 
@@ -53,4 +54,6 @@ Anders laver i første omgang analyse af få udvalgte variable angivet i nøglea
 
 rename variable fra Anamnese som anført i KBLs nøgle.
 
-Kvalitetskontrol og beregning af sumscorer for ESS samt BRAF skemaer
+Kvalitetskontrol og beregning af sumscorer for ESS samt BRAF skemaer.
+
+Beregning af componentscores for PSQI.

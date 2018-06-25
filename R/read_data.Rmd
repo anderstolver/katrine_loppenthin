@@ -11,6 +11,9 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
+library(hms) ### package for storing times
+library(tidyverse)
+library(lubridate)
 ```
 
 # Read in data
@@ -67,7 +70,7 @@ data_follow_bristol <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
                    , sheet = 3)
 data_follow_fys_akt <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
                    , sheet = 4)
-data_follow_dep <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
+data_follow_dep <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 5)
 data_follow_fys_funk <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
                    , sheet = 6)
@@ -75,7 +78,7 @@ data_follow_eq5d <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
                    , sheet = 7)
 ```
 
-## Anamnese (Baseline + follow up)
+## 1. Anamnese (Baseline + follow up)
 
 ```{r}
 data_base_anamnese <- read_excel(path  = "../data/Anamnese_baseline_followup.xls", sheet = 1)
@@ -100,13 +103,130 @@ names(data_follow_anamnese)
 
 # Construction of new variables
 
-## PSQI
+## 2. PSQI
 
 Consult `scoringsmanual til PSQI.pdf`
 
+### Check for invalid data entries and correct errors
+
 ```{r}
-data_base_psqi
+apply(data_base_psqi[, -1], 2, unique)
 ```
+
+#### Question 1
+
+Change 24:00 to 00:00
+
+```{r}
+data_base_psqi$SP2_Spg_1_BA <- with(data_base_psqi, replace(SP2_Spg_1_BA, SP2_Spg_1_BA == "24.00", "00.00"))
+data_base_psqi$SP2_Spg_1_BA
+```
+
+#### Question 3
+
+```{r}
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="5.30", "05.30"))
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="6.30", "06.30"))
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="7.00", "07.00"))
+data_base_psqi$SP2_Spg_3_BA
+```
+
+#### Question 4
+
+```{r}
+data_base_psqi$SP2_Spg_4_BA <- with(data_base_psqi, replace(SP2_Spg_4_BA, SP2_Spg_4_BA =="07.00", "7"))
+```
+
+#### Change time format of questions 1,3
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, SP2_Spg_1_time_BA = parse_time(gsub("\\.", ":", SP2_Spg_1_BA), format = "%H:%M"), SP2_Spg_3_time_BA = parse_time(gsub("\\.", ":", SP2_Spg_3_BA), format = "%H:%M"), psqi4_in_bed = SP2_Spg_3_time_BA - SP2_Spg_1_time_BA )
+```
+
+
+### Component 1: Subjective sleep quality
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi1 = SP2_Spg_6_BA)
+```
+
+### Component 2: Sleep latency
+
+Check carefully conversion to numerical score ....
+
+```{r}
+data_base_psqi$SP2_Spg_2_BA_num <- cut(as.numeric(data_base_psqi$SP2_Spg_2_BA), breaks = c(0, 15, 30, 60, Inf)
+    , labels = c(0, 1, 2, 3))
+data_base_psqi <- mutate(data_base_psqi, psqi2_tmp = parse_integer(SP2_Spg_2_BA_num) + SP2_Spg_5A_BA)
+data_base_psqi <- mutate(data_base_psqi, psqi2 = parse_integer(cut(psqi2_tmp, breaks = c(0, 2, 4, 6, Inf), labels = c(0, 1, 2, 3))))
+with(data_base_psqi, table(psqi2, psqi2_tmp))
+```
+
+### Component 3: Sleep duration
+
+Check carefully conversion to numerical score ....
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi3 = parse_integer(cut(parse_double(data_base_psqi$SP2_Spg_4_BA), breaks = c(-Inf, 5, 6, 7, Inf)
+    , labels = c(3, 2, 1, 0))))
+table(data_base_psqi$psqi3, data_base_psqi$SP2_Spg_4_BA )
+```
+
+### Component 4: Habitual sleep efficiency
+
+Be very careful with conversion to time differences (bedtime after midnat causes some problems) ...
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi4_in_bed = 3600*24*(psqi4_in_bed < 0) + psqi4_in_bed
+       , psqi4_sleep_eff = 100 * 3600 * parse_double(SP2_Spg_4_BA) / parse_double(psqi4_in_bed)
+       , psqi4 = parse_integer(cut(psqi4_sleep_eff, breaks = c(0, 65, 75, 85, Inf), right = FALSE, labels = c(3, 2, 1, 0))))
+
+cbind(data_base_psqi$psqi4_sleep_eff, data_base_psqi$psqi4)
+```
+
+
+### Component 5: Sleep disturbances
+
+Check carefully conversion ...
+
+```{r}
+choose_vars <- paste("SP2_Spg_5", LETTERS[2:10], "_BA", sep = "")
+choose_vars
+data_base_psqi$psqi5_tmp <- apply(select(data_base_psqi, choose_vars), 1, sum)
+data_base_psqi <- mutate(data_base_psqi, psqi5 = parse_integer(cut(psqi5_tmp, breaks = c(-Inf, 0, 9, 18, 27, Inf)
+                                                     , labels = c(-1, 0, 1, 2, 3))))
+table(data_base_psqi$psqi5_tmp, data_base_psqi$psqi5)
+```
+
+### Component 6: Use of sleeping medication
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi6 = data_base_psqi$SP2_Spg_7_BA)
+```
+
+### Component 7: Daytime dysfunction
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi7_tmp = SP2_Spg_8_BA + SP2_Spg_9_BA
+       , psqi7 = parse_integer(cut(psqi7_tmp, breaks = c(-Inf, 0, 2, 4, 6, Inf), labels = 0:4)))
+with(data_base_psqi, table(psqi7, psqi7_tmp))
+```
+
+### Global PSQI
+
+```{r}
+data_base_psqi$psqi_total <- apply(select(data_base_psqi, num_range(prefix = "psqi", range = 1:7)), 1, sum)
+```
+
+### Overview of component scores from PSQI
+
+```{r}
+select(data_base_psqi, num_range("psqi", 1:7) )
+```
+
+**How to handle missing answers?**
+
+**Repeat for follow up data**
 
 ## 3. Epworth Sleepiness Scale (ESS)
 
@@ -258,3 +378,33 @@ summary(data_follow_bristol$BRAF_emo)
 summary(data_follow_bristol$BRAF_total)
 ```
 
+## 5. Fysisik aktivitetsniveau (HAQ)
+
+## 6. Center for Epidemiologic studies depression scale
+
+### Check raw data values (baseline)
+
+Range should be 0-3
+```{r}
+apply(data_base_dep[, -1], 2, function(z){table(z)})
+```
+
+### Check raw data values (follow up)
+
+Range should be 0-3
+```{r}
+apply(data_follow_dep[, -1], 2, table)
+```
+### Compute sum scores from CES-D
+
+```{r}
+data_base_dep$CES_D_total <- apply(data_base_dep[, -1], 1, sum)
+data_follow_dep$CES_D_total <- apply(data_follow_dep[, -1], 1, sum)
+```
+
+
+## 7. Fysisk funktion i det daglige (HAQ)
+
+## 8. EQ-5D Helbredsspørgeskema
+
+## 9. Søvndagbog

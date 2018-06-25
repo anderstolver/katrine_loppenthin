@@ -7,3 +7,5 @@ Anders Tolver
 Denne fil giver overblik over arbejdet med Kathrine Bjerre Løppenthins søvnprojekt.
 
 [Log-fil over hele projektet](Log.md)
+
+[Read in and tidy up data](R/read_data.md)
