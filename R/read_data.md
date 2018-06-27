@@ -855,10 +855,10 @@ apply(data_follow_ess[, 1 + 1:8], 2, function(z){sum(is.na(z))})
 
 
 ```r
-data_base_ess$total <- apply(data_base_ess[, 1 + 1:8], 1, sum)
-data_follow_ess$total <- apply(data_follow_ess[, 1 + 1:8], 1, sum)
+data_base_ess$ess_total <- apply(data_base_ess[, 1 + 1:8], 1, sum)
+data_follow_ess$ess_total <- apply(data_follow_ess[, 1 + 1:8], 1, sum)
 
-summary(data_base_ess$total)
+summary(data_base_ess$ess_total)
 ```
 
 ```
@@ -867,7 +867,7 @@ summary(data_base_ess$total)
 ```
 
 ```r
-summary(data_follow_ess$total)
+summary(data_follow_ess$ess_total)
 ```
 
 ```
@@ -2052,4 +2052,60 @@ summary(data_follow_eq_5d$SP8_Spg_6_FU)
 
 # Export cleaned data
 
+## Extract and combine baseline data
+
+**Overvej hvilken version af join der skal benyttes for at sikre mod slåfejl i id nummer**
+
+
+```r
+data_base <- select(data_base_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "baseline")
+
+tmp_base <- select(data_base_ess, ID_NUM, ess_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+```
+
+```
+## Joining, by = c("ID_NUM", "time")
+```
+
+```r
+tmp_base <- select(data_base_bristol, ID_NUM, contains("BRAF_")) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+```
+
+```
+## Joining, by = c("ID_NUM", "time")
+```
+
+```r
+tmp_base <- select(data_base_dep, ID_NUM, CES_D_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+```
+
+```
+## Joining, by = c("ID_NUM", "time")
+```
+
+```r
+data_base
+```
+
+```
+## # A tibble: 38 x 17
+##       ID_NUM psqi1 psqi2 psqi3 psqi4 psqi5 psqi6 psqi7 psqi_total     time
+##        <chr> <dbl> <int> <int> <int> <int> <dbl> <int>      <dbl>    <chr>
+##  1 01-180613     1     0     1     0     1     0     1          4 baseline
+##  2 02-210613     0     0     2     3     0     0     2          7 baseline
+##  3 03-280613     2     1     2     0     1     0     2          8 baseline
+##  4 04-280613     0     2     2     1     1     0     1          7 baseline
+##  5 05-280613     0    NA     2     2     0     0     3         NA baseline
+##  6 06-030713     1     0     1     0     0     0     2          4 baseline
+##  7 07-090713     1    NA    NA    NA     1     1     3         NA baseline
+##  8 08-240713     0    NA     2     3     1     0     2         NA baseline
+##  9 09-240713     0     0     1     1     0     0     2          4 baseline
+## 10 10-240713     3     1     3     3     1     0     1         12 baseline
+## # ... with 28 more rows, and 7 more variables: ess_total <dbl>,
+## #   BRAF_phys <dbl>, BRAF_living <dbl>, BRAF_cog <dbl>, BRAF_emo <dbl>,
+## #   BRAF_total <dbl>, CES_D_total <dbl>
+```
 

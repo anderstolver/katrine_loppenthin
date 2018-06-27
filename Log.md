@@ -10,6 +10,7 @@ Anders Tolver
 * 2018: indlæsning af data og organisering af projekt (4 t)
 * 2018: beregning af componentscores for PSQI + CES-D (3.5 t)
 * 2018: beregning af componentscores for PSQI + CES-D (3 t)
+* 2018: kombiner data til samlet datasæt (1.5 t)
 
 # Log
 

@@ -367,11 +367,11 @@ apply(data_follow_ess[, 1 + 1:8], 2, function(z){sum(is.na(z))})
 ### Compute ESS sum score
 
 ```{r}
-data_base_ess$total <- apply(data_base_ess[, 1 + 1:8], 1, sum)
-data_follow_ess$total <- apply(data_follow_ess[, 1 + 1:8], 1, sum)
+data_base_ess$ess_total <- apply(data_base_ess[, 1 + 1:8], 1, sum)
+data_follow_ess$ess_total <- apply(data_follow_ess[, 1 + 1:8], 1, sum)
 
-summary(data_base_ess$total)
-summary(data_follow_ess$total)
+summary(data_base_ess$ess_total)
+summary(data_follow_ess$ess_total)
 ```
 
 
@@ -645,4 +645,22 @@ summary(data_follow_eq_5d$SP8_Spg_6_FU)
 
 # Export cleaned data
 
+## Extract and combine baseline data
+
+**Overvej hvilken version af join der skal benyttes for at sikre mod slåfejl i id nummer**
+
+```{r}
+data_base <- select(data_base_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "baseline")
+
+tmp_base <- select(data_base_ess, ID_NUM, ess_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_bristol, ID_NUM, contains("BRAF_")) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_dep, ID_NUM, CES_D_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+data_base
+```
 
