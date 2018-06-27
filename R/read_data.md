@@ -2049,3 +2049,7 @@ summary(data_follow_eq_5d$SP8_Spg_6_FU)
 ```
 
 ## 9. Søvndagbog
+
+# Export cleaned data
+
+
