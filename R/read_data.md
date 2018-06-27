@@ -63,7 +63,7 @@ Note that `.` and blanks have been used to indicate  missing values ...
 
 
 ```r
-data_follow_psqi <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
+data_follow_psqi <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 1)
 data_follow_ess <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 2)
@@ -73,10 +73,17 @@ data_follow_fys_akt <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
                    , sheet = 4)
 data_follow_dep <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 5)
-data_follow_fys_funk <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
+data_follow_fys_funk <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 6)
-data_follow_eq5d <- read_excel(path  = "../data/Follow-up data.xls", skip = 1
+data_follow_eq_5d <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
                    , sheet = 7)
+```
+
+Remove columns 21+22 for `data_follow_psqi`.
+
+
+```r
+data_follow_psqi <- data_follow_psqi[, -c(21, 22)]
 ```
 
 ## 1. Anamnese (Baseline + follow up)
@@ -197,9 +204,77 @@ apply(data_base_psqi[, -1], 2, unique)
 ## [1] "1" "3" "2" "0"
 ```
 
+
+```r
+apply(data_follow_psqi[, -1], 2, unique)
+```
+
+```
+## $SP2_Spg_1_FU
+##  [1] "23.00"  "22.30"  "22.45"  "00.15"  "23.30"  "22.00"  "21.30" 
+##  [8] NA       "00.00"  "01.00"  "0.875"  "0.9375" "23"    
+## 
+## $SP2_Spg_2_FU
+##  [1] "5"    "10"   "30"   "17.5" "7.5"  "2"    "15"   "35"   "40"   NA    
+## [11] "105"  "20"   "50"   "12.5" "45"  
+## 
+## $SP2_Spg_3_FU
+##  [1] "07.00" "08.00" "06.30" "07.15" "06.15" "06.20" "7"     "07.30"
+##  [9] "06.45" "6"     NA      "08.15" "05.50" "05.00" "06.00" "60.00"
+## [17] "6.15"  "6.30"  "8.30" 
+## 
+## $SP2_Spg_4_FU
+##  [1] "7"   "8"   "6"   "9"   "6.5" "5"   "5.5" NA    "3"   "7.5" "3.5"
+## 
+## $SP2_Spg_5A_FU
+## [1] " 1" " 2" " 0" " 3" NA  
+## 
+## $SP2_Spg_5B_FU
+## [1] " 1" " 2" " 3" NA   " 0"
+## 
+## $SP2_Spg_5C_FU
+## [1] " 1" " 2" " 3" NA   " 0"
+## 
+## $SP2_Spg_5D_FU
+## [1] " 2" " 0" " 1" " 3" NA  
+## 
+## $SP2_Spg_5E_FU
+## [1] " 1" " 0" " 2" " 3" NA  
+## 
+## $SP2_Spg_5F_FU
+## [1] " 2" " 0" " 1" NA  
+## 
+## $SP2_Spg_5G_FU
+## [1] " 1" " 3" " 2" " 0" NA  
+## 
+## $SP2_Spg_5H_FU
+## [1] " 1" " 0" " 2" NA  
+## 
+## $SP2_Spg_5I_FU
+## [1] " 1" " 2" " 3" " 0" NA  
+## 
+## $SP2_Spg_5J_svar_FU
+## [1] " 1" NA   " 3" " 2" " 0"
+## 
+## $SP2_Spg_5J_FU
+## [1] " 1" " 0" " 2" NA   " 3"
+## 
+## $SP2_Spg_6_FU
+## [1] " 0" " 1" " 3" NA  
+## 
+## $SP2_Spg_7_FU
+## [1] " 0" " 1" " 2" NA   " 3"
+## 
+## $SP2_Spg_8_FU
+## [1] " 1" " 0" " 2" NA   " 3"
+## 
+## $SP2_Spg_9_FU
+## [1] " 3" " 2" " 0" " 1" NA
+```
+
 #### Question 1
 
-Change 24:00 to 00:00
+Change 24:00 to 00:00 and correct some obvious errors
 
 
 ```r
@@ -213,6 +288,24 @@ data_base_psqi$SP2_Spg_1_BA
 ## [17] "23.00" "23.30" "23.15" "01.00" "23.30" "22.30" "23.30" "22.30"
 ## [25] "00.00" "22.30" "02.00" "22.00" "01.30" "22.00" "22.15" "23.00"
 ## [33] "01.00" "00.00" "21.00" "22.30" "22.30" "00.00"
+```
+
+Grundet inkonsistent brug af `.` eller `:` har der indsneget sig nogle fejl i indlæsning af data som rettes her (se Excel-ark)
+
+
+```r
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "23", "23.00"))
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "0.875", "21.00"))
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "0.9375", "22.30"))
+data_follow_psqi$SP2_Spg_1_FU
+```
+
+```
+##  [1] "23.00" "23.00" "22.30" "22.45" "00.15" "22.30" "23.30" "22.30"
+##  [9] "22.00" "23.30" "22.30" "21.30" "22.00" "22.30" "23.00" "23.30"
+## [17] "22.30" "23.30" "23.30" NA      "23.30" "22.30" "00.00" "22.30"
+## [25] "23.30" "23.30" "01.00" "23.30" "00.00" "22.00" "22.00" "23.00"
+## [33] NA      NA      "21.00" "22.30" "23.00" "23.00"
 ```
 
 #### Question 3
@@ -233,6 +326,26 @@ data_base_psqi$SP2_Spg_3_BA
 ## [33] "07.00" "08.00" "05.30" "06.30" "07.00" "06.30"
 ```
 
+
+```r
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="7", "07.00"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6.15", "06.15"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6.30", "06.30"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="8.30", "08.30"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="60.00", "06.00"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6", "06.00"))
+
+data_follow_psqi$SP2_Spg_3_FU
+```
+
+```
+##  [1] "07.00" "08.00" "06.30" "07.00" "07.15" "06.15" "06.30" "07.00"
+##  [9] "06.20" "07.00" "07.00" "07.00" "06.20" "07.00" "07.30" "06.45"
+## [17] "06.00" "07.30" "07.15" NA      "08.15" "06.30" "07.00" "07.30"
+## [25] "05.50" "08.00" "05.00" "06.30" "08.00" "06.00" "06.00" "06.00"
+## [33] NA      NA      "05.50" "06.15" "06.30" "08.30"
+```
+
 #### Question 4
 
 
@@ -251,6 +364,33 @@ data_base_psqi <- mutate(data_base_psqi, SP2_Spg_1_time_BA = parse_time(gsub("\\
 ## Warning: package 'bindrcpp' was built under R version 3.3.2
 ```
 
+```r
+data_base_psqi$psqi4_in_bed
+```
+
+```
+## Time differences in secs
+##  [1] -59400 -52200  25200 -57600  27000 -60300  22500 -55800 -58500 -55800
+## [11] -55800 -46800 -54000 -59400 -55800 -59700 -61200 -57600 -57600  25200
+## [21] -55800 -57600 -57600 -54000  25200 -54900  12600 -56700  28800 -57600
+## [31] -57900 -57600  21600  28800 -55800 -57600 -55800  23400
+```
+
+
+```r
+data_follow_psqi <- mutate(data_follow_psqi, SP2_Spg_1_time_FU = parse_time(gsub("\\.", ":", SP2_Spg_1_FU), format = "%H:%M"), SP2_Spg_3_time_FU = parse_time(gsub("\\.", ":", SP2_Spg_3_FU), format = "%H:%M"), psqi4_in_bed = SP2_Spg_3_time_FU - SP2_Spg_1_time_FU )
+data_follow_psqi$psqi4_in_bed
+```
+
+```
+## Time differences in secs
+##  [1] -57600 -54000 -57600 -56700  25200 -58500 -61200 -55800 -56400 -59400
+## [11] -55800 -52200 -56400 -55800 -55800 -60300 -59400 -57600 -58500     NA
+## [21] -54900 -57600  25200 -54000 -63600 -55800  14400 -61200  28800 -57600
+## [31] -57600 -61200     NA     NA -54600 -58500 -59400 -52200
+```
+
+## PSQI - component scores (Baseline)
 
 ### Component 1: Subjective sleep quality
 
@@ -310,49 +450,12 @@ data_base_psqi <- mutate(data_base_psqi, psqi4_in_bed = 3600*24*(psqi4_in_bed < 
        , psqi4_sleep_eff = 100 * 3600 * parse_double(SP2_Spg_4_BA) / parse_double(psqi4_in_bed)
        , psqi4 = parse_integer(cut(psqi4_sleep_eff, breaks = c(0, 65, 75, 85, Inf), right = FALSE, labels = c(3, 2, 1, 0))))
 
-cbind(data_base_psqi$psqi4_sleep_eff, data_base_psqi$psqi4)
+summary(data_base_psqi$psqi4_sleep_eff)
 ```
 
 ```
-##            [,1] [,2]
-##  [1,]  93.33333    0
-##  [2,]  63.15789    3
-##  [3,]  85.71429    0
-##  [4,]  75.00000    1
-##  [5,]  73.33333    2
-##  [6,]  96.55172    0
-##  [7,]        NA   NA
-##  [8,]  64.70588    3
-##  [9,]  83.87097    1
-## [10,]  58.82353    3
-## [11,]  70.58824    2
-## [12,]  54.54545    3
-## [13,]  83.33333    1
-## [14,]  80.00000    1
-## [15,]  58.82353    3
-## [16,]  80.89888    1
-## [17,]  85.71429    0
-## [18,]  62.50000    3
-## [19,]  81.25000    1
-## [20,]  85.71429    0
-## [21,]  52.94118    3
-## [22,]  81.25000    1
-## [23,]  75.00000    1
-## [24,]  22.22222    3
-## [25,]  85.71429    0
-## [26,]  85.71429    0
-## [27,] 100.00000    0
-## [28,]  72.72727    2
-## [29,]  93.75000    0
-## [30,]  75.00000    1
-## [31,]  69.47368    2
-## [32,]  93.75000    0
-## [33,]  83.33333    1
-## [34,]  87.50000    0
-## [35,]  58.82353    3
-## [36,]  87.50000    0
-## [37,]  70.58824    2
-## [38,]  92.30769    0
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##   22.22   69.47   80.90   76.36   85.71  100.00       1
 ```
 
 
@@ -434,33 +537,195 @@ with(data_base_psqi, table(psqi7, psqi7_tmp))
 data_base_psqi$psqi_total <- apply(select(data_base_psqi, num_range(prefix = "psqi", range = 1:7)), 1, sum)
 ```
 
-### Overview of component scores from PSQI
+## PSQI - component scores (Follow up)
+
+### Component 1: Subjective sleep quality
 
 
 ```r
-select(data_base_psqi, num_range("psqi", 1:7) )
+data_follow_psqi <- mutate(data_follow_psqi, psqi1 = SP2_Spg_6_FU)
+```
+
+### Component 2: Sleep latency
+
+Check carefully conversion to numerical score ....
+
+
+```r
+data_follow_psqi$SP2_Spg_2_FU_num <- parse_integer(cut(as.numeric(data_follow_psqi$SP2_Spg_2_FU), breaks = c( 0, 15, 30, 60, Inf)
+    , labels = c(0, 1, 2, 3)))
+data_follow_psqi <- mutate(data_follow_psqi, psqi2_tmp = SP2_Spg_2_FU_num + SP2_Spg_5A_FU)
+data_follow_psqi <- mutate(data_follow_psqi, psqi2 = parse_integer(cut(psqi2_tmp, breaks = c(-Inf, 0, 2, 4, 6)
+                                                         , labels = 0:3)))
+data_follow_psqi$psqi2_tmp
+```
+
+```
+##  [1]  1  1  3  2  3  2  1  1  1  3  5  4  1  1  5  2  3  0  0 NA  4  2  3
+## [24] NA  1  2  5  0  2  1  5  0 NA NA  1  3  3  0
+```
+
+```r
+data_follow_psqi$psqi2
+```
+
+```
+##  [1]  1  1  2  1  2  1  1  1  1  2  3  2  1  1  3  1  2  0  0 NA  2  1  2
+## [24] NA  1  1  3  0  1  1  3  0 NA NA  1  2  2  0
+```
+
+```r
+with(data_follow_psqi, table(psqi2, psqi2_tmp))
+```
+
+```
+##      psqi2_tmp
+## psqi2  0  1  2  3  4  5
+##     0  5  0  0  0  0  0
+##     1  0 10  6  0  0  0
+##     2  0  0  0  7  2  0
+##     3  0  0  0  0  0  4
+```
+
+### Component 3: Sleep duration
+
+Check carefully conversion to numerical score ....
+
+
+```r
+data_follow_psqi <- mutate(data_follow_psqi, psqi3 = parse_integer(cut(parse_double(data_follow_psqi$SP2_Spg_4_FU), breaks = c(-Inf, 5, 6, 7, Inf)
+    , labels = c(3, 2, 1, 0))))
+table(data_follow_psqi$psqi3, data_follow_psqi$SP2_Spg_4_FU )
+```
+
+```
+##    
+##      3 3.5  5 5.5  6 6.5  7 7.5  8  9
+##   0  0   0  0   0  0   0  0   1  3  1
+##   1  0   0  0   0  0   3  7   0  0  0
+##   2  0   0  0   2 13   0  0   0  0  0
+##   3  1   1  3   0  0   0  0   0  0  0
+```
+
+### Component 4: Habitual sleep efficiency
+
+Be very careful with conversion to time differences (bedtime after midnat causes some problems) ...
+
+
+```r
+data_follow_psqi <- mutate(data_follow_psqi, psqi4_in_bed = 3600*24*(psqi4_in_bed < 0) + psqi4_in_bed
+       , psqi4_sleep_eff = 100 * 3600 * parse_double(SP2_Spg_4_FU) / parse_double(psqi4_in_bed)
+       , psqi4 = parse_integer(cut(psqi4_sleep_eff, breaks = c(0, 65, 75, 85, Inf), right = FALSE, labels = c(3, 2, 1, 0))))
+summary(data_follow_psqi$psqi4_sleep_eff)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##   39.62   75.00   80.00   79.65   85.71  105.90       3
+```
+
+NB: One subject `08-240713` sleeps more hours than he or she stays in bed resulting in sleep efficiency above 100.
+
+### Component 5: Sleep disturbances
+
+Check carefully conversion ...
+
+
+```r
+choose_vars <- paste("SP2_Spg_5", LETTERS[2:10], "_FU", sep = "")
+choose_vars
+```
+
+```
+## [1] "SP2_Spg_5B_FU" "SP2_Spg_5C_FU" "SP2_Spg_5D_FU" "SP2_Spg_5E_FU"
+## [5] "SP2_Spg_5F_FU" "SP2_Spg_5G_FU" "SP2_Spg_5H_FU" "SP2_Spg_5I_FU"
+## [9] "SP2_Spg_5J_FU"
+```
+
+```r
+data_follow_psqi$psqi5_tmp <- apply(select(data_follow_psqi, choose_vars), 1, sum)
+data_follow_psqi <- mutate(data_follow_psqi, psqi5 = parse_integer(cut(psqi5_tmp, breaks = c(-Inf, 0, 9, 18, 27, Inf)
+                                                     , labels = c(-1, 0, 1, 2, 3))))
+table(data_follow_psqi$psqi5_tmp, data_follow_psqi$psqi5)
+```
+
+```
+##     
+##      0 1 2
+##   3  2 0 0
+##   4  2 0 0
+##   5  2 0 0
+##   6  1 0 0
+##   7  4 0 0
+##   9  2 0 0
+##   10 0 3 0
+##   11 0 3 0
+##   12 0 2 0
+##   13 0 5 0
+##   15 0 4 0
+##   17 0 2 0
+##   18 0 1 0
+##   19 0 0 1
+```
+
+### Component 6: Use of sleeping medication
+
+
+```r
+data_follow_psqi <- mutate(data_follow_psqi, psqi6 = data_follow_psqi$SP2_Spg_7_FU)
+```
+
+### Component 7: Daytime dysfunction
+
+
+```r
+data_follow_psqi <- mutate(data_follow_psqi, psqi7_tmp = SP2_Spg_8_FU + SP2_Spg_9_FU
+       , psqi7 = parse_integer(cut(psqi7_tmp, breaks = c(-Inf, 0, 2, 4, 6, Inf), labels = 0:4)))
+with(data_follow_psqi, table(psqi7, psqi7_tmp))
+```
+
+```
+##      psqi7_tmp
+## psqi7 0 1 2 3 4 5
+##     0 5 0 0 0 0 0
+##     1 0 5 8 0 0 0
+##     2 0 0 0 2 6 0
+##     3 0 0 0 0 0 9
+```
+
+### Global PSQI
+
+
+```r
+data_follow_psqi$psqi_total <- apply(select(data_follow_psqi, num_range(prefix = "psqi", range = 1:7)), 1, sum)
+```
+
+### Overview of component scores from PSQI
+
+
+
+```r
+select(data_follow_psqi, num_range("psqi", 1:7) )
 ```
 
 ```
 ## # A tibble: 38 x 7
 ##    psqi1 psqi2 psqi3 psqi4 psqi5 psqi6 psqi7
 ##    <dbl> <int> <int> <int> <int> <dbl> <int>
-##  1     1     0     1     0     1     0     1
-##  2     0     0     2     3     0     0     2
-##  3     2     1     2     0     1     0     2
-##  4     0     2     2     1     1     0     1
-##  5     0    NA     2     2     0     0     3
-##  6     1     0     1     0     0     0     2
-##  7     1    NA    NA    NA     1     1     3
-##  8     0    NA     2     3     1     0     2
-##  9     0     0     1     1     0     0     2
-## 10     3     1     3     3     1     0     1
+##  1     0     1     1     0     1     0     2
+##  2     1     1     0     0     0     0     2
+##  3     3     2     2     1     1     0     1
+##  4     0     1     2     2     1     0     1
+##  5     0     2     2     0     1     1     3
+##  6     1     1     1     0     0     0     2
+##  7     1     1     2     0     1     1     3
+##  8     1     1     0     0     1     0     2
+##  9     0     1     1     1     0     0     1
+## 10     0     2     2     1     2     0     1
 ## # ... with 28 more rows
 ```
 
 **How to handle missing answers?**
-
-**Repeat for follow up data**
 
 ## 3. Epworth Sleepiness Scale (ESS)
 
@@ -1025,7 +1290,38 @@ summary(data_follow_bristol$BRAF_total)
 ##    3.00   10.00   23.00   21.70   29.50   41.53       3
 ```
 
-## 5. Fysisik aktivitetsniveau (HAQ)
+## 5. Fysisik aktivitetsniveau
+
+Remove all comments from baseline questionnaire (col 2 -)
+
+
+```r
+data_base_fys_akt <- data_base_fys_akt[, 1:2]
+```
+
+Check raw data values
+
+
+```r
+table(data_base_fys_akt$SP5_Spg_1_BA)
+```
+
+```
+## 
+##  1  2  3 
+##  6 21 11
+```
+
+```r
+table(data_follow_fys_akt$SP5_Spg_1_FU)
+```
+
+```
+## 
+##  .  1  2  3  4 
+##  2  3 16 13  3
+```
+
 
 ## 6. Center for Epidemiologic studies depression scale
 
@@ -1259,6 +1555,497 @@ data_follow_dep$CES_D_total <- apply(data_follow_dep[, -1], 1, sum)
 
 ## 7. Fysisk funktion i det daglige (HAQ)
 
+Ignore scoring for aids/devices so far i.e. consider only items 1-20
+
+
+```r
+names(data_base_fys_funk)
+```
+
+```
+##  [1] "ID_NUM"                   "SP7_Spg_1_BA"            
+##  [3] "SP7_Spg_2_BA"             "SP7_Spg_3_BA"            
+##  [5] "SP7_Spg_4_BA"             "SP7_Spg_5_BA"            
+##  [7] "SP7_Spg_6_BA"             "SP7_Spg_7_BA"            
+##  [9] "SP7_Spg_8_BA"             "SP7_Spg_9_BA"            
+## [11] "SP7_Spg_10_BA"            "SP7_Spg_11_BA"           
+## [13] "SP7_Spg_12_BA"            "SP7_Spg_13_BA"           
+## [15] "SP7_Spg_14_BA"            "SP7_Spg_15_BA"           
+## [17] "SP7_Spg_16_BA"            "SP7_Spg_17_BA"           
+## [19] "SP7_Spg_18_BA"            "SP7_Spg_19_BA"           
+## [21] "SP7_Spg_20_BA"            "Sp7_stok_BA"             
+## [23] "Sp7_dressing_BA"          "Sp7_krykstok_BA"         
+## [25] "Sp7_specielstol_BA"       "Sp7_gangstativ_BA"       
+## [27] "Sp7_toiletsaede_BA"       "Sp7_korestol_BA"         
+## [29] "Sp7_badestol_BA"          "Sp7_kokken_BA"           
+## [31] "Sp7_badevarelse_BA"       "Sp7_spiseredskaber_BA"   
+## [33] "Sp7_langskaftede_BA"      "Sp7_andre_BA"            
+## [35] "Sp7_ikke_hjalpemidler_BA" "Sp7_spg_21_BA"           
+## [37] "Sp7_spg_22_BA"            "Sp7_spg_23_BA"
+```
+
+### Baseline (HAQ)
+
+Check raw data values (allowed range: 0 - 3)
+
+
+```r
+apply(data_base_fys_funk[, 1 + 1:20], 2, table)
+```
+
+```
+## $SP7_Spg_1_BA
+## 
+##  0  1 
+## 28 10 
+## 
+## $SP7_Spg_2_BA
+## 
+##  0  1 
+## 29  8 
+## 
+## $SP7_Spg_3_BA
+## 
+##  0  1 
+## 29  9 
+## 
+## $SP7_Spg_4_BA
+## 
+##  0  1 
+## 27 11 
+## 
+## $SP7_Spg_5_BA
+## 
+##  0  1  2 
+## 24 10  4 
+## 
+## $SP7_Spg_6_BA
+## 
+##  0  1  2 
+## 33  4  1 
+## 
+## $SP7_Spg_7_BA
+## 
+##  0  1  2  3 12 
+## 13 14  9  1  1 
+## 
+## $SP7_Spg_8_BA
+## 
+##  0  1 
+## 32  6 
+## 
+## $SP7_Spg_9_BA
+## 
+##  0  1 
+## 29  9 
+## 
+## $SP7_Spg_10_BA
+## 
+##  0  1 
+## 26 12 
+## 
+## $SP7_Spg_11_BA
+## 
+##  0  1  2  3 
+## 24  2  2  5 
+## 
+## $SP7_Spg_12_BA
+## 
+##  0  1 
+## 31  7 
+## 
+## $SP7_Spg_13_BA
+## 
+##  0  1  2  3 
+## 12 18  5  3 
+## 
+## $SP7_Spg_14_BA
+## 
+##  0  1 
+## 24 14 
+## 
+## $SP7_Spg_15_BA
+## 
+##  0  1 
+## 29  9 
+## 
+## $SP7_Spg_16_BA
+## 
+##  0  1  2  3 
+## 15 18  4  1 
+## 
+## $SP7_Spg_17_BA
+## 
+##  0  1  2 
+## 27 10  1 
+## 
+## $SP7_Spg_18_BA
+## 
+##  0  1  2 
+## 22 12  3 
+## 
+## $SP7_Spg_19_BA
+## 
+##  0  1  2 
+## 26 11  1 
+## 
+## $SP7_Spg_20_BA
+## 
+##  0  1  2  3 
+## 15 12 10  1
+```
+
+Correct / change invalid entry `12` in item 7
+
+**Confirm method for computing alternative HAQ-DI score**
+
+
+```r
+data_base_fys_funk$haq1 <- apply(data_base_fys_funk[, 1 + 1:2], 1, max, na.rm = T)
+data_base_fys_funk$haq2 <- apply(data_base_fys_funk[, 1 + 3:4], 1, max, na.rm = T)
+data_base_fys_funk$haq3 <- apply(data_base_fys_funk[, 1 + 5:7], 1, max, na.rm = T)
+data_base_fys_funk$haq4 <- apply(data_base_fys_funk[, 1 + 8:9], 1, max, na.rm = T)
+data_base_fys_funk$haq5 <- apply(data_base_fys_funk[, 1 + 10:12], 1, max, na.rm = T)
+data_base_fys_funk$haq6 <- apply(data_base_fys_funk[, 1 + 13:14], 1, max, na.rm = T)
+data_base_fys_funk$haq7 <- apply(data_base_fys_funk[, 1 + 15:17], 1, max, na.rm = T)
+data_base_fys_funk$haq8 <- apply(data_base_fys_funk[, 1 + 18:20], 1, max, na.rm = T)
+data_base_fys_funk$haq_NA <- apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, function(z){sum(!is.na(z))})
+
+data_base_fys_funk$haq_total <- apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, mean)
+
+data_base_fys_funk$haq_total <- replace(data_base_fys_funk$haq_total, data_base_fys_funk$haq_NA < 6, NA)
+```
+
+Check scores for each of eight categories
+
+
+```r
+apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 2, table)
+```
+
+```
+## $haq1
+## 
+##  0  1 
+## 27 11 
+## 
+## $haq2
+## 
+##  0  1 
+## 25 13 
+## 
+## $haq3
+## 
+##  0  1  2  3 12 
+## 13 14  9  1  1 
+## 
+## $haq4
+## 
+##  0  1 
+## 29  9 
+## 
+## $haq5
+## 
+##  0  1  2  3 
+## 23  8  2  5 
+## 
+## $haq6
+## 
+##  0  1  2  3 
+## 11 19  5  3 
+## 
+## $haq7
+## 
+##  0  1  2  3 
+## 13 20  4  1 
+## 
+## $haq8
+## 
+##  0  1  2  3 
+## 13 14 10  1
+```
+
+### Follow up (HAQ)
+
+Check raw data values (allowed range: 0 - 3)
+
+
+```r
+apply(data_follow_fys_funk[, 1 + 1:20], 2, table)
+```
+
+```
+## $SP7_Spg_1_FU
+## 
+##  0  1 
+## 23 12 
+## 
+## $SP7_Spg_2_FU
+## 
+##  0  1 
+## 28  7 
+## 
+## $SP7_Spg_3_FU
+## 
+##  0  1 
+## 28  7 
+## 
+## $SP7_Spg_4_FU
+## 
+##  0  1 
+## 27  8 
+## 
+## $SP7_Spg_5_FU
+## 
+##  0  1  2 
+## 22 10  3 
+## 
+## $SP7_Spg_6_FU
+## 
+##  0  1  2 
+## 28  6  1 
+## 
+## $SP7_Spg_7_FU
+## 
+##  0  1  2  3 
+## 13 18  3  1 
+## 
+## $SP7_Spg_8_FU
+## 
+##  0  1 
+## 31  4 
+## 
+## $SP7_Spg_9_FU
+## 
+##  0  1 
+## 29  6 
+## 
+## $SP7_Spg_10_FU
+## 
+##  0  1 
+## 24 11 
+## 
+## $SP7_Spg_11_FU
+## 
+##  0  1  2  3 
+## 22  4  1  5 
+## 
+## $SP7_Spg_12_FU
+## 
+##  0  1 
+## 29  6 
+## 
+## $SP7_Spg_13_FU
+## 
+##  0  1  2  3 
+## 12 19  2  2 
+## 
+## $SP7_Spg_14_FU
+## 
+##  0  1 
+## 24 11 
+## 
+## $SP7_Spg_15_FU
+## 
+##  0  1  2 
+## 28  6  1 
+## 
+## $SP7_Spg_16_FU
+## 
+##  0  1  2 
+## 16 16  3 
+## 
+## $SP7_Spg_17_FU
+## 
+##  0  1  2 
+## 27  7  1 
+## 
+## $SP7_Spg_18_FU
+## 
+##  0  1  2 
+## 21  9  5 
+## 
+## $SP7_Spg_19_FU
+## 
+##  0  1  2 
+## 26  8  1 
+## 
+## $SP7_Spg_20_FU
+## 
+##  0  1  2  3 
+## 14 13  7  1
+```
+
+**Confirm method for computing alternative HAQ-DI score**
+
+Technical note:
+
+With `na.rm = T` then `max` function returns `-Inf` for an empty vector. A user modified version returning `NA` for an empty vector is used here.
+
+
+```r
+my_max <- function(x, ...){
+  if(all(is.na(x))){
+    return(NA)
+  }
+  else{
+    return(max(x, ...))
+  }
+  
+}
+
+data_follow_fys_funk$haq1 <- apply(data_follow_fys_funk[, 1 + 1:2], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq2 <- apply(data_follow_fys_funk[, 1 + 3:4], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq3 <- apply(data_follow_fys_funk[, 1 + 5:7], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq4 <- apply(data_follow_fys_funk[, 1 + 8:9], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq5 <- apply(data_follow_fys_funk[, 1 + 10:12], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq6 <- apply(data_follow_fys_funk[, 1 + 13:14], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq7 <- apply(data_follow_fys_funk[, 1 + 15:17], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq8 <- apply(data_follow_fys_funk[, 1 + 18:20], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq_NA <- apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, function(z){sum(!is.na(z))})
+
+data_follow_fys_funk$haq_total <- apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, mean)
+
+data_follow_fys_funk$haq_total <- replace(data_follow_fys_funk$haq_total, data_follow_fys_funk$haq_NA < 6, NA)
+```
+
+Check scores for each of eight categories
+
+
+```r
+apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 2, table)
+```
+
+```
+## $haq1
+## 
+##  0  1 
+## 23 12 
+## 
+## $haq2
+## 
+##  0  1 
+## 26  9 
+## 
+## $haq3
+## 
+##  0  1  2  3 
+## 11 18  5  1 
+## 
+## $haq4
+## 
+##  0  1 
+## 29  6 
+## 
+## $haq5
+## 
+##  0  1  2  3 
+## 19 10  1  5 
+## 
+## $haq6
+## 
+##  0  1  2  3 
+## 11 20  2  2 
+## 
+## $haq7
+## 
+##  0  1  2 
+## 16 15  4 
+## 
+## $haq8
+## 
+##  0  1  2  3 
+## 14 13  7  1
+```
+
+
+
 ## 8. EQ-5D Helbredsspørgeskema
+
+Check raw data values (items 1-5)
+
+
+```r
+apply(data_base_eq_5d[, -c(1, 7)], 2, table)
+```
+
+```
+## $SP8_Spg_1_BA
+## 
+##  1  2  3 
+## 24 12  2 
+## 
+## $SP8_Spg_2_BA
+## 
+##  1  2 
+## 27 11 
+## 
+## $SP8_Spg_3_BA
+## 
+##  1  2  3 
+## 16 16  6 
+## 
+## $SP8_Spg_4_BA
+## 
+##  1  2  3  4 
+##  6 20 11  1 
+## 
+## $SP8_Spg_5_BA
+## 
+##  1  2 
+## 29  9
+```
+
+```r
+apply(data_follow_eq_5d[, -c(1, 7)], 2, table)
+```
+
+```
+## $SP8_Spg_1_FU
+## 
+##  1  2  3 
+## 27  4  4 
+## 
+## $SP8_Spg_2_FU
+## 
+##  1  2  3 
+## 26  6  3 
+## 
+## $SP8_Spg_3_FU
+## 
+##  1  2  3  4 
+## 18 10  5  2 
+## 
+## $SP8_Spg_4_FU
+## 
+##  1  2  3  4 
+##  6 17 11  1 
+## 
+## $SP8_Spg_5_FU
+## 
+##  1  2  3 
+## 23 11  1
+```
+
+Check raw data values (items 6)
+
+
+```r
+summary(data_base_eq_5d$SP8_Spg_6_BA)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   30.00   56.25   75.00   71.42   83.75  100.00
+```
+
+```r
+summary(data_follow_eq_5d$SP8_Spg_6_FU)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##   20.00   60.00   75.00   69.71   86.50   99.00       3
+```
 
 ## 9. Søvndagbog

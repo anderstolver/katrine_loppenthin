@@ -8,7 +8,8 @@ Anders Tolver
 
 * 14/12-2017: møde på Kræftens Bekæmpelse (1 t)
 * 22/6-2018: indlæsning af data og organisering af projekt (4 t)
-* 25/6-2018: beregning af componentscores for PSQI (1.5 t)
+* 25/6-2018: beregning af componentscores for PSQI + CES-D (3.5 t)
+* 27/6-2018: beregning af componentscores for PSQI + CES-D (3 t)
 
 ## Møde d. 14/12-2017
 
