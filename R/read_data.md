@@ -1,6 +1,6 @@
-# Read data and tidy up data
+# JR-Sleep: Read data and tidy up data
 Anders Tolver  
-21 Mar 2018  
+2018  
 
 
 
@@ -126,6 +126,12 @@ names(data_follow_anamnese)
 
 
 ## S-dagbog (Baseline + follow up)
+
+**Not sure where to look for these data**
+
+Excel sheet labelled `Søvndagbog` fra files `Baseline data.xls` and `Follow-up data.xls` does not contain any data. 
+
+Not obvious that variables of file `Kopi af Indtast søvndagbog.xls` correspond to variables listed in `Variabeloversigt JR-Sleep.doc` for `Polysomnografi`.
 
 # Construction of new variables
 
@@ -2050,16 +2056,38 @@ summary(data_follow_eq_5d$SP8_Spg_6_FU)
 
 ## 9. Søvndagbog
 
+
+
 # Export cleaned data
 
 ## Extract and combine baseline data
 
 **Overvej hvilken version af join der skal benyttes for at sikre mod slåfejl i id nummer**
 
+The following data sets are combined (`ID_NUM` used as key ... remember to rename ID variable if necessary)
+
+* Anamnese: remove empty variable "Baseline" and replace by "time" (15 + 1 / ID + 1 / time)
+* PSQI: component scores and total (8)
+* ESS: sum score (1)
+* Bristol: four BRAF components and total (5)
+* Fysisk aktivitetsniveau: kun een variabel (1)
+* CES-D: sum score (1)
+* Fysisk funktion: seven components and total (8)
+* EQ-5D Helbredsspørgeskema (6)
+
 
 ```r
-data_base <- select(data_base_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "baseline")
+data_base <- select(data_base_anamnese, - Baseline) %>% mutate(time = "baseline") %>% rename("ID_NUM" = "ID-NR")
 
+tmp_base <- select(data_base_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+```
+
+```
+## Joining, by = c("ID_NUM", "time")
+```
+
+```r
 tmp_base <- select(data_base_ess, ID_NUM, ess_total) %>% mutate(time = "baseline")
 data_base <- left_join(data_base, tmp_base)
 ```
@@ -2078,6 +2106,15 @@ data_base <- left_join(data_base, tmp_base)
 ```
 
 ```r
+tmp_base <- data_base_fys_akt %>% rename(fys_akt = "SP5_Spg_1_BA")
+data_base <- left_join(data_base, tmp_base)
+```
+
+```
+## Joining, by = "ID_NUM"
+```
+
+```r
 tmp_base <- select(data_base_dep, ID_NUM, CES_D_total) %>% mutate(time = "baseline")
 data_base <- left_join(data_base, tmp_base)
 ```
@@ -2087,25 +2124,49 @@ data_base <- left_join(data_base, tmp_base)
 ```
 
 ```r
-data_base
+tmp_base <- select(data_base_fys_funk, c(1, num_range(prefix = "haq", range = 1:7), matches("haq_total")))
+data_base <- left_join(data_base, tmp_base)
 ```
 
 ```
-## # A tibble: 38 x 17
-##       ID_NUM psqi1 psqi2 psqi3 psqi4 psqi5 psqi6 psqi7 psqi_total     time
-##        <chr> <dbl> <int> <int> <int> <int> <dbl> <int>      <dbl>    <chr>
-##  1 01-180613     1     0     1     0     1     0     1          4 baseline
-##  2 02-210613     0     0     2     3     0     0     2          7 baseline
-##  3 03-280613     2     1     2     0     1     0     2          8 baseline
-##  4 04-280613     0     2     2     1     1     0     1          7 baseline
-##  5 05-280613     0    NA     2     2     0     0     3         NA baseline
-##  6 06-030713     1     0     1     0     0     0     2          4 baseline
-##  7 07-090713     1    NA    NA    NA     1     1     3         NA baseline
-##  8 08-240713     0    NA     2     3     1     0     2         NA baseline
-##  9 09-240713     0     0     1     1     0     0     2          4 baseline
-## 10 10-240713     3     1     3     3     1     0     1         12 baseline
-## # ... with 28 more rows, and 7 more variables: ess_total <dbl>,
-## #   BRAF_phys <dbl>, BRAF_living <dbl>, BRAF_cog <dbl>, BRAF_emo <dbl>,
-## #   BRAF_total <dbl>, CES_D_total <dbl>
+## Joining, by = "ID_NUM"
+```
+
+```r
+data_base <- left_join(data_base, data_base_eq_5d)
+```
+
+```
+## Joining, by = "ID_NUM"
+```
+
+Display variables of cleaned data set
+
+
+```r
+dim(data_base)
+```
+
+```
+## [1] 38 47
+```
+
+```r
+names(data_base)
+```
+
+```
+##  [1] "ID_NUM"       "Sex"          "Age"          "Swol_joi"    
+##  [5] "Tend_joi"     "DAS"          "HGB"          "CRP"         
+##  [9] "Disease_dura" "Comobid"      "Educa"        "Job"         
+## [13] "Live_alone"   "Smoking"      "alcohol"      "koffein"     
+## [17] "time"         "psqi1"        "psqi2"        "psqi3"       
+## [21] "psqi4"        "psqi5"        "psqi6"        "psqi7"       
+## [25] "psqi_total"   "ess_total"    "BRAF_phys"    "BRAF_living" 
+## [29] "BRAF_cog"     "BRAF_emo"     "BRAF_total"   "fys_akt"     
+## [33] "CES_D_total"  "haq1"         "haq2"         "haq3"        
+## [37] "haq4"         "haq5"         "haq6"         "haq7"        
+## [41] "haq_total"    "SP8_Spg_1_BA" "SP8_Spg_2_BA" "SP8_Spg_3_BA"
+## [45] "SP8_Spg_4_BA" "SP8_Spg_5_BA" "SP8_Spg_6_BA"
 ```
 

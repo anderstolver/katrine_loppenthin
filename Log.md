@@ -11,6 +11,7 @@ Anders Tolver
 * 2018: beregning af componentscores for PSQI + CES-D (3.5 t)
 * 2018: beregning af componentscores for PSQI + CES-D (3 t)
 * 2018: kombiner data til samlet datasæt (1.5 t)
+* 2018: midlertidigt kombineret baseline data + lang email. (1.5 t)
 
 # Log
 
