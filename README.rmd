@@ -17,37 +17,32 @@ Denne fil giver overblik over arbejdet med Kathrine Bjerre Løppenthins søvnpro
 
 * [Read in and tidy up data](R/import_data.md): indlæser og renser data - gemmer pæne datasæt der benyttes ved statistiske analyser
 
-```{r include = FALSE}
-num_vars <- c("sleep_effi", "WASO", "Arous")
-file_names <- paste(num_vars, ".html", sep = "")
-```
-
 # Analyseresultater (numeriske variable)
 
 * PSG
-    + Total søvntid (i timer): [TST](R/TST_num.html)
-    + Søvneffektivitet (i %): [sleep_effi](R/sleep_effi.html)
-    + Sleep-onset (i timer): [SO](R/SO_num.html)
-    + Søvnlatenstid (i timer): [sleep_latency](R/sleep_latency_num.html)
-    + REMlatenstid (i timer): [REM_latency](R/REM_latency_num.html)
-    + Antal opvågninger: [WASO](R/WASO.html)
-    + Antal arousals: [Arous](R/Arous.html)
-    + Wake after sleep-onset (i timer): [wake_time](R/wake_time_num.html)
-    + Stadie 1 søvn (i %): [N1](R/N1.html)
-    + Stadie 2 søvn (i %): [N2](R/N2.html)
-    + Stadie 3 søvn (i %): [N3](R/N3.html)
+    + Total søvntid (i timer): [TST](R/TST_num.md)
+    + Søvneffektivitet (i %): [sleep_effi](R/sleep_effi.md)
+    + Sleep-onset (i timer): [SO](R/SO_num.md)
+    + Søvnlatenstid (i timer): [sleep_latency](R/sleep_latency_num.md)
+    + REMlatenstid (i timer): [REM_latency](R/REM_latency_num.md)
+    + Antal opvågninger: [WASO](R/WASO.md)
+    + Antal arousals: [Arous](R/Arous.md)
+    + Wake after sleep-onset (i timer): [wake_time](R/wake_time_num.md)
+    + Stadie 1 søvn (i %): [N1](R/N1.md)
+    + Stadie 2 søvn (i %): [N2](R/N2.md)
+    + Stadie 3 søvn (i %): [N3](R/N3.md)
 
 * 2. PSQI
-    + Sleep quality: [psqi1](R/psqi1.html)
-    + Sleep latency: [psqi2](R/psqi2.html)
-    + Sleep duration: [psqi3](R/psqi3.html)
-    + Sleep efficiency: [psqi4](R/psqi4.html)
-    + Sleep disturbances: [psqi5](R/psqi5.html)
-    + Using sleep medication: [psqi6](R/psqi6.html)
-    + Daytime dysfunction: [psqi7](R/psqi7.html)
-    + Global PSQI: [psqi_total](R/psqi_total.html)
+    + Sleep quality: [psqi1](R/psqi1.md)
+    + Sleep latency: [psqi2](R/psqi2.md)
+    + Sleep duration: [psqi3](R/psqi3.md)
+    + Sleep efficiency: [psqi4](R/psqi4.md)
+    + Sleep disturbances: [psqi5](R/psqi5.md)
+    + Using sleep medication: [psqi6](R/psqi6.md)
+    + Daytime dysfunction: [psqi7](R/psqi7.md)
+    + Global PSQI: [psqi_total](R/psqi_total.md)
 * 3. ESS
-    + Epworth sleepiness scale: [ess_total](R/ess_total.html)
+    + Epworth sleepiness scale: [ess_total](R/ess_total.md)
 
 # Analyseresultater (kategoriske/ordinale variable)
 
