@@ -4,8 +4,8 @@ author: "Anders Tolver"
 date: "2018"
 output: 
   html_document:
-    toc: TRUE
     keep_md: TRUE
+    toc: TRUE
     code_folding: hide
 ---
 
@@ -15,6 +15,7 @@ library(readxl)
 library(hms) ### package for storing times
 library(tidyverse)
 library(lubridate)
+library(forcats)
 ```
 
 # Read in data
@@ -32,6 +33,24 @@ Reply to email on July 1st, 2018: data files on Polysomnography are still missin
 ```{r}
 data_rand_list <- read_excel(path  = "../data/Intervention og kontrol.xlsx"
                    , sheet = 1)
+data_rand_list <- dplyr::rename(data_rand_list, "ID_NUM" = "ID-nummer")
+```
+
+Check levels
+
+```{r}
+unique(data_rand_list$Randomisering)
+```
+
+Relabel factor levels
+
+```{r}
+data_rand_list <- mutate(data_rand_list, Randomisering = fct_collapse(Randomisering, control = c("kontrol", "Kontrol"), intervention = c("Intervention", "Interventkion")))
+```
+
+Check new encoding of groups
+```{r}
+unique(data_rand_list$Randomisering)
 ```
 
 ## PSQI, ESS, BRAF, fysakt, CES-Dep, fysfunk, EQ-5D
@@ -103,6 +122,8 @@ Be careful to read in the following variables (encoded hour:min:sec)
 
 R reads in these variables in Date format. Below we extract only the time part.
 
+However we also make numerical version of relevant variables measuring the duration of an interval.
+
 **NB: Make KBL confirm that variable wake_time has the right unit. What does WASO really measure? Could it be that WASO in data corresponds to variable called Awake in Variabeloversigt JR-Sleep. Variable Søvnmønster/beskrivelse not to be used?**
 
 
@@ -111,22 +132,25 @@ R reads in these variables in Date format. Below we extract only the time part.
 ```{r warning = FALSE}
 data_base_psg <- read_excel(path  = "../data/Baseline PSG data NY.xlsx", sheet = 1, na = ".", skip = 1)
 data_base_psg <- mutate(data_base_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, "%H:%M:%S"),
                           Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, "%H:%M:%S"),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, "%H:%M:%S"),
+Wake_time_num = hour(Wake_time) + minute(Wake_time)/60 + second(Wake_time)/3600,
 Wake_time = format(Wake_time, "%H:%M:%S")
 )
 
 data_base_psg <- dplyr::rename(data_base_psg
                                , "WASO" ="waso"
                                , "wake_time" = "Wake_time"
+                               , "wake_time_num" = "Wake_time_num"
                                , "sleep_effi" = "Sleep_effi") %>% select(-contains("nster/beskr"))
 
-
-
-data_base_psg
 ```
 
 ### Follow up
@@ -135,11 +159,16 @@ data_base_psg
 data_follow_psg <- read_excel(path  = "../data/Follow-up PSG data.xlsx", sheet = 1, na = ".")
 
 data_follow_psg <- mutate(data_follow_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, "%H:%M:%S"),
                           Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, "%H:%M:%S"),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, "%H:%M:%S"),
+wake_time_num = hour(wake_time) + minute(wake_time)/60 + second(wake_time)/3600,
 wake_time = format(wake_time, "%H:%M:%S")
 )
 
@@ -832,3 +861,14 @@ data_full <- bind_rows(data_base, data_follow)
 dim(data_full)
 names(data_full)
 ```
+
+```{r}
+data_full <- left_join(data_full, data_rand_list)
+```
+
+## Export data
+
+```{r}
+write.table(data_full, file = "../data/data_full.txt", quote = F, row.names = F, sep = "\t")
+```
+

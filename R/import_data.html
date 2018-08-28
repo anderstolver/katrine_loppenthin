@@ -211,6 +211,7 @@ $(document).ready(function () {
 <li><a href="#extract-and-combine-baseline-data">Extract and combine baseline data</a></li>
 <li><a href="#extract-and-combine-follow-up-data">Extract and combine follow up data</a></li>
 <li><a href="#combine-data-from-baseline-and-follow-up">Combine data from baseline and follow up</a></li>
+<li><a href="#export-data">Export data</a></li>
 </ul></li>
 </ul>
 </div>
@@ -219,20 +220,32 @@ $(document).ready(function () {
 <h1>Read in data</h1>
 <p>Kathrine Bjerre Løppenthin provided the following data files for the project</p>
 <pre class="r"><code>list.files(path = &quot;../data&quot;)</code></pre>
-<pre><code>## [1] &quot;Anamnese_baseline_followup.xls&quot;       
-## [2] &quot;Baseline PSG data NY.xlsx&quot;            
-## [3] &quot;Baseline data.xls&quot;                    
-## [4] &quot;Follow-up PSG data.xlsx&quot;              
-## [5] &quot;Follow-up data.xls&quot;                   
-## [6] &quot;Intervention og kontrol.xlsx&quot;         
-## [7] &quot;Kopi af Indtast s\303\270vndagbog.xls&quot;
-## [8] &quot;Variabeloversigt JR-Sleep.doc&quot;        
-## [9] &quot;watt-max test_baseline_follow-up.xls&quot;</code></pre>
+<pre><code>##  [1] &quot;Anamnese_baseline_followup.xls&quot;       
+##  [2] &quot;Baseline PSG data NY.xlsx&quot;            
+##  [3] &quot;Baseline data.xls&quot;                    
+##  [4] &quot;Follow-up PSG data.xlsx&quot;              
+##  [5] &quot;Follow-up data.xls&quot;                   
+##  [6] &quot;Intervention og kontrol.xlsx&quot;         
+##  [7] &quot;Kopi af Indtast s\303\270vndagbog.xls&quot;
+##  [8] &quot;Variabeloversigt JR-Sleep.doc&quot;        
+##  [9] &quot;data_full.txt&quot;                        
+## [10] &quot;watt-max test_baseline_follow-up.xls&quot; 
+## [11] &quot;~$Follow-up PSG data.xlsx&quot;</code></pre>
 <p>Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.</p>
 <div id="randomisation-list" class="section level2">
 <h2>Randomisation list</h2>
 <pre class="r"><code>data_rand_list &lt;- read_excel(path  = &quot;../data/Intervention og kontrol.xlsx&quot;
-                   , sheet = 1)</code></pre>
+                   , sheet = 1)
+data_rand_list &lt;- dplyr::rename(data_rand_list, &quot;ID_NUM&quot; = &quot;ID-nummer&quot;)</code></pre>
+<p>Check levels</p>
+<pre class="r"><code>unique(data_rand_list$Randomisering)</code></pre>
+<pre><code>## [1] &quot;kontrol&quot;       &quot;Intervention&quot;  &quot;Interventkion&quot; &quot;Kontrol&quot;</code></pre>
+<p>Relabel factor levels</p>
+<pre class="r"><code>data_rand_list &lt;- mutate(data_rand_list, Randomisering = fct_collapse(Randomisering, control = c(&quot;kontrol&quot;, &quot;Kontrol&quot;), intervention = c(&quot;Intervention&quot;, &quot;Interventkion&quot;)))</code></pre>
+<p>Check new encoding of groups</p>
+<pre class="r"><code>unique(data_rand_list$Randomisering)</code></pre>
+<pre><code>## [1] control      intervention
+## Levels: intervention control</code></pre>
 </div>
 <div id="psqi-ess-braf-fysakt-ces-dep-fysfunk-eq-5d" class="section level2">
 <h2>PSQI, ESS, BRAF, fysakt, CES-Dep, fysfunk, EQ-5D</h2>
@@ -289,55 +302,46 @@ data_follow_eq_5d &lt;- read_excel(path  = &quot;../data/Follow-up data.xls&quot
 <li>Wake after sleep onset (WASO)</li>
 </ul>
 <p>R reads in these variables in Date format. Below we extract only the time part.</p>
+<p>However we also make numerical version of relevant variables measuring the duration of an interval.</p>
 <p><strong>NB: Make KBL confirm that variable wake_time has the right unit. What does WASO really measure? Could it be that WASO in data corresponds to variable called Awake in Variabeloversigt JR-Sleep. Variable Søvnmønster/beskrivelse not to be used?</strong></p>
 <div id="baseline" class="section level3">
 <h3>Baseline</h3>
 <pre class="r"><code>data_base_psg &lt;- read_excel(path  = &quot;../data/Baseline PSG data NY.xlsx&quot;, sheet = 1, na = &quot;.&quot;, skip = 1)
 data_base_psg &lt;- mutate(data_base_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, &quot;%H:%M:%S&quot;),
                           Bedtime = format(Bedtime,&quot;%H:%M:%S&quot;),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, &quot;%H:%M:%S&quot;),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, &quot;%H:%M:%S&quot;),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, &quot;%H:%M:%S&quot;),
+Wake_time_num = hour(Wake_time) + minute(Wake_time)/60 + second(Wake_time)/3600,
 Wake_time = format(Wake_time, &quot;%H:%M:%S&quot;)
 )
 
 data_base_psg &lt;- dplyr::rename(data_base_psg
                                , &quot;WASO&quot; =&quot;waso&quot;
                                , &quot;wake_time&quot; = &quot;Wake_time&quot;
-                               , &quot;sleep_effi&quot; = &quot;Sleep_effi&quot;) %&gt;% select(-contains(&quot;nster/beskr&quot;))
-
-
-
-data_base_psg</code></pre>
-<pre><code>## # A tibble: 38 x 22
-##    ID_NUM TST   Bedtime sleep_effi SO    sleep_latency REM_latency  WASO
-##    &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;         &lt;chr&gt;       &lt;dbl&gt;
-##  1 01-18~ 05:3~ 06:33:~      0.84  23:1~ 00:04:00      00:55:00       33
-##  2 02-21~ 07:2~ 07:55:~      0.93  23:1~ 00:07:30      03:13:30       26
-##  3 03-28~ 05:5~ 06:00:~      0.968 00:4~ 00:01:00      01:40:30        8
-##  4 04-28~ 05:2~ 05:50:~      0.903 00:4~ 00:12:00      01:00:00       31
-##  5 05-28~ 06:0~ 06:31:~      0.924 00:2~ 00:01:30      01:03:00       10
-##  6 06-03~ 05:3~ 06:04:~      0.852 00:1~ 00:17:00      01:05:30       18
-##  7 07-09~ 07:0~ 07:17:~      0.961 23:5~ 00:03:00      01:06:00       14
-##  8 08-24~ 07:3~ 08:03:~      0.907 22:4~ 00:05:30      02:29:30       23
-##  9 09-24~ 08:2~ 08:52:~      0.939 22:5~ 00:02:00      00:40:00       35
-## 10 10-24~ 06:0~ 06:30:~      0.922 23:0~ 01:00:00      01:01:00       21
-## # ... with 28 more rows, and 14 more variables: Arous &lt;dbl&gt;,
-## #   wake_time &lt;chr&gt;, N1 &lt;dbl&gt;, N2 &lt;dbl&gt;, N3 &lt;dbl&gt;, REM &lt;dbl&gt;, AHI &lt;dbl&gt;,
-## #   LM &lt;dbl&gt;, PLM &lt;dbl&gt;, OSA &lt;dbl&gt;, Mix_apnea &lt;dbl&gt;, Cen_apnea &lt;dbl&gt;,
-## #   Hyp_nea &lt;dbl&gt;, Desat &lt;dbl&gt;</code></pre>
+                               , &quot;wake_time_num&quot; = &quot;Wake_time_num&quot;
+                               , &quot;sleep_effi&quot; = &quot;Sleep_effi&quot;) %&gt;% select(-contains(&quot;nster/beskr&quot;))</code></pre>
 </div>
 <div id="follow-up-1" class="section level3">
 <h3>Follow up</h3>
 <pre class="r"><code>data_follow_psg &lt;- read_excel(path  = &quot;../data/Follow-up PSG data.xlsx&quot;, sheet = 1, na = &quot;.&quot;)
 
 data_follow_psg &lt;- mutate(data_follow_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, &quot;%H:%M:%S&quot;),
                           Bedtime = format(Bedtime,&quot;%H:%M:%S&quot;),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, &quot;%H:%M:%S&quot;),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, &quot;%H:%M:%S&quot;),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, &quot;%H:%M:%S&quot;),
+wake_time_num = hour(wake_time) + minute(wake_time)/60 + second(wake_time)/3600,
 wake_time = format(wake_time, &quot;%H:%M:%S&quot;)
 )
 
@@ -1887,25 +1891,33 @@ data_base &lt;- left_join(data_base, tmp_base)</code></pre>
 <pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
 <p>Display variables of cleaned data set</p>
 <pre class="r"><code>dim(data_base)</code></pre>
-<pre><code>## [1] 38 68</code></pre>
+<pre><code>## [1] 38 73</code></pre>
 <pre class="r"><code>names(data_base)</code></pre>
-<pre><code>##  [1] &quot;ID_NUM&quot;        &quot;Sex&quot;           &quot;Age&quot;           &quot;Swol_joi&quot;     
-##  [5] &quot;Tend_joi&quot;      &quot;DAS&quot;           &quot;HGB&quot;           &quot;CRP&quot;          
-##  [9] &quot;Disease_dura&quot;  &quot;Comobid&quot;       &quot;Educa&quot;         &quot;Job&quot;          
-## [13] &quot;Live_alone&quot;    &quot;Smoking&quot;       &quot;alcohol&quot;       &quot;koffein&quot;      
-## [17] &quot;time&quot;          &quot;psqi1&quot;         &quot;psqi2&quot;         &quot;psqi3&quot;        
-## [21] &quot;psqi4&quot;         &quot;psqi5&quot;         &quot;psqi6&quot;         &quot;psqi7&quot;        
-## [25] &quot;psqi_total&quot;    &quot;ess_total&quot;     &quot;BRAF_phys&quot;     &quot;BRAF_living&quot;  
-## [29] &quot;BRAF_cog&quot;      &quot;BRAF_emo&quot;      &quot;BRAF_total&quot;    &quot;fys_akt&quot;      
-## [33] &quot;CES_D_total&quot;   &quot;haq1&quot;          &quot;haq2&quot;          &quot;haq3&quot;         
-## [37] &quot;haq4&quot;          &quot;haq5&quot;          &quot;haq6&quot;          &quot;haq7&quot;         
-## [41] &quot;haq_total&quot;     &quot;SP8_Spg_1_BA&quot;  &quot;SP8_Spg_2_BA&quot;  &quot;SP8_Spg_3_BA&quot; 
-## [45] &quot;SP8_Spg_4_BA&quot;  &quot;SP8_Spg_5_BA&quot;  &quot;SP8_Spg_6_BA&quot;  &quot;TST&quot;          
-## [49] &quot;Bedtime&quot;       &quot;sleep_effi&quot;    &quot;SO&quot;            &quot;sleep_latency&quot;
-## [53] &quot;REM_latency&quot;   &quot;WASO&quot;          &quot;Arous&quot;         &quot;wake_time&quot;    
-## [57] &quot;N1&quot;            &quot;N2&quot;            &quot;N3&quot;            &quot;REM&quot;          
-## [61] &quot;AHI&quot;           &quot;LM&quot;            &quot;PLM&quot;           &quot;OSA&quot;          
-## [65] &quot;Mix_apnea&quot;     &quot;Cen_apnea&quot;     &quot;Hyp_nea&quot;       &quot;Desat&quot;</code></pre>
+<pre><code>##  [1] &quot;ID_NUM&quot;            &quot;Sex&quot;               &quot;Age&quot;              
+##  [4] &quot;Swol_joi&quot;          &quot;Tend_joi&quot;          &quot;DAS&quot;              
+##  [7] &quot;HGB&quot;               &quot;CRP&quot;               &quot;Disease_dura&quot;     
+## [10] &quot;Comobid&quot;           &quot;Educa&quot;             &quot;Job&quot;              
+## [13] &quot;Live_alone&quot;        &quot;Smoking&quot;           &quot;alcohol&quot;          
+## [16] &quot;koffein&quot;           &quot;time&quot;              &quot;psqi1&quot;            
+## [19] &quot;psqi2&quot;             &quot;psqi3&quot;             &quot;psqi4&quot;            
+## [22] &quot;psqi5&quot;             &quot;psqi6&quot;             &quot;psqi7&quot;            
+## [25] &quot;psqi_total&quot;        &quot;ess_total&quot;         &quot;BRAF_phys&quot;        
+## [28] &quot;BRAF_living&quot;       &quot;BRAF_cog&quot;          &quot;BRAF_emo&quot;         
+## [31] &quot;BRAF_total&quot;        &quot;fys_akt&quot;           &quot;CES_D_total&quot;      
+## [34] &quot;haq1&quot;              &quot;haq2&quot;              &quot;haq3&quot;             
+## [37] &quot;haq4&quot;              &quot;haq5&quot;              &quot;haq6&quot;             
+## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;SP8_Spg_1_BA&quot;     
+## [43] &quot;SP8_Spg_2_BA&quot;      &quot;SP8_Spg_3_BA&quot;      &quot;SP8_Spg_4_BA&quot;     
+## [46] &quot;SP8_Spg_5_BA&quot;      &quot;SP8_Spg_6_BA&quot;      &quot;TST&quot;              
+## [49] &quot;Bedtime&quot;           &quot;sleep_effi&quot;        &quot;SO&quot;               
+## [52] &quot;sleep_latency&quot;     &quot;REM_latency&quot;       &quot;WASO&quot;             
+## [55] &quot;Arous&quot;             &quot;wake_time&quot;         &quot;N1&quot;               
+## [58] &quot;N2&quot;                &quot;N3&quot;                &quot;REM&quot;              
+## [61] &quot;AHI&quot;               &quot;LM&quot;                &quot;PLM&quot;              
+## [64] &quot;OSA&quot;               &quot;Mix_apnea&quot;         &quot;Cen_apnea&quot;        
+## [67] &quot;Hyp_nea&quot;           &quot;Desat&quot;             &quot;TST_num&quot;          
+## [70] &quot;SO_num&quot;            &quot;sleep_latency_num&quot; &quot;REM_latency_num&quot;  
+## [73] &quot;wake_time_num&quot;</code></pre>
 </div>
 <div id="extract-and-combine-follow-up-data" class="section level2">
 <h2>Extract and combine follow up data</h2>
@@ -1942,27 +1954,41 @@ data_follow &lt;- left_join(data_follow, tmp_follow)</code></pre>
 <p>Be careful to rename questions from EQ-5D from BA and FU to common name. <strong>Not done yet</strong>.</p>
 <pre class="r"><code>data_full &lt;- bind_rows(data_base, data_follow)
 dim(data_full)</code></pre>
-<pre><code>## [1] 76 74</code></pre>
+<pre><code>## [1] 76 79</code></pre>
 <pre class="r"><code>names(data_full)</code></pre>
-<pre><code>##  [1] &quot;ID_NUM&quot;        &quot;Sex&quot;           &quot;Age&quot;           &quot;Swol_joi&quot;     
-##  [5] &quot;Tend_joi&quot;      &quot;DAS&quot;           &quot;HGB&quot;           &quot;CRP&quot;          
-##  [9] &quot;Disease_dura&quot;  &quot;Comobid&quot;       &quot;Educa&quot;         &quot;Job&quot;          
-## [13] &quot;Live_alone&quot;    &quot;Smoking&quot;       &quot;alcohol&quot;       &quot;koffein&quot;      
-## [17] &quot;time&quot;          &quot;psqi1&quot;         &quot;psqi2&quot;         &quot;psqi3&quot;        
-## [21] &quot;psqi4&quot;         &quot;psqi5&quot;         &quot;psqi6&quot;         &quot;psqi7&quot;        
-## [25] &quot;psqi_total&quot;    &quot;ess_total&quot;     &quot;BRAF_phys&quot;     &quot;BRAF_living&quot;  
-## [29] &quot;BRAF_cog&quot;      &quot;BRAF_emo&quot;      &quot;BRAF_total&quot;    &quot;fys_akt&quot;      
-## [33] &quot;CES_D_total&quot;   &quot;haq1&quot;          &quot;haq2&quot;          &quot;haq3&quot;         
-## [37] &quot;haq4&quot;          &quot;haq5&quot;          &quot;haq6&quot;          &quot;haq7&quot;         
-## [41] &quot;haq_total&quot;     &quot;SP8_Spg_1_BA&quot;  &quot;SP8_Spg_2_BA&quot;  &quot;SP8_Spg_3_BA&quot; 
-## [45] &quot;SP8_Spg_4_BA&quot;  &quot;SP8_Spg_5_BA&quot;  &quot;SP8_Spg_6_BA&quot;  &quot;TST&quot;          
-## [49] &quot;Bedtime&quot;       &quot;sleep_effi&quot;    &quot;SO&quot;            &quot;sleep_latency&quot;
-## [53] &quot;REM_latency&quot;   &quot;WASO&quot;          &quot;Arous&quot;         &quot;wake_time&quot;    
-## [57] &quot;N1&quot;            &quot;N2&quot;            &quot;N3&quot;            &quot;REM&quot;          
-## [61] &quot;AHI&quot;           &quot;LM&quot;            &quot;PLM&quot;           &quot;OSA&quot;          
-## [65] &quot;Mix_apnea&quot;     &quot;Cen_apnea&quot;     &quot;Hyp_nea&quot;       &quot;Desat&quot;        
-## [69] &quot;SP8_Spg_1_FU&quot;  &quot;SP8_Spg_2_FU&quot;  &quot;SP8_Spg_3_FU&quot;  &quot;SP8_Spg_4_FU&quot; 
-## [73] &quot;SP8_Spg_5_FU&quot;  &quot;SP8_Spg_6_FU&quot;</code></pre>
+<pre><code>##  [1] &quot;ID_NUM&quot;            &quot;Sex&quot;               &quot;Age&quot;              
+##  [4] &quot;Swol_joi&quot;          &quot;Tend_joi&quot;          &quot;DAS&quot;              
+##  [7] &quot;HGB&quot;               &quot;CRP&quot;               &quot;Disease_dura&quot;     
+## [10] &quot;Comobid&quot;           &quot;Educa&quot;             &quot;Job&quot;              
+## [13] &quot;Live_alone&quot;        &quot;Smoking&quot;           &quot;alcohol&quot;          
+## [16] &quot;koffein&quot;           &quot;time&quot;              &quot;psqi1&quot;            
+## [19] &quot;psqi2&quot;             &quot;psqi3&quot;             &quot;psqi4&quot;            
+## [22] &quot;psqi5&quot;             &quot;psqi6&quot;             &quot;psqi7&quot;            
+## [25] &quot;psqi_total&quot;        &quot;ess_total&quot;         &quot;BRAF_phys&quot;        
+## [28] &quot;BRAF_living&quot;       &quot;BRAF_cog&quot;          &quot;BRAF_emo&quot;         
+## [31] &quot;BRAF_total&quot;        &quot;fys_akt&quot;           &quot;CES_D_total&quot;      
+## [34] &quot;haq1&quot;              &quot;haq2&quot;              &quot;haq3&quot;             
+## [37] &quot;haq4&quot;              &quot;haq5&quot;              &quot;haq6&quot;             
+## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;SP8_Spg_1_BA&quot;     
+## [43] &quot;SP8_Spg_2_BA&quot;      &quot;SP8_Spg_3_BA&quot;      &quot;SP8_Spg_4_BA&quot;     
+## [46] &quot;SP8_Spg_5_BA&quot;      &quot;SP8_Spg_6_BA&quot;      &quot;TST&quot;              
+## [49] &quot;Bedtime&quot;           &quot;sleep_effi&quot;        &quot;SO&quot;               
+## [52] &quot;sleep_latency&quot;     &quot;REM_latency&quot;       &quot;WASO&quot;             
+## [55] &quot;Arous&quot;             &quot;wake_time&quot;         &quot;N1&quot;               
+## [58] &quot;N2&quot;                &quot;N3&quot;                &quot;REM&quot;              
+## [61] &quot;AHI&quot;               &quot;LM&quot;                &quot;PLM&quot;              
+## [64] &quot;OSA&quot;               &quot;Mix_apnea&quot;         &quot;Cen_apnea&quot;        
+## [67] &quot;Hyp_nea&quot;           &quot;Desat&quot;             &quot;TST_num&quot;          
+## [70] &quot;SO_num&quot;            &quot;sleep_latency_num&quot; &quot;REM_latency_num&quot;  
+## [73] &quot;wake_time_num&quot;     &quot;SP8_Spg_1_FU&quot;      &quot;SP8_Spg_2_FU&quot;     
+## [76] &quot;SP8_Spg_3_FU&quot;      &quot;SP8_Spg_4_FU&quot;      &quot;SP8_Spg_5_FU&quot;     
+## [79] &quot;SP8_Spg_6_FU&quot;</code></pre>
+<pre class="r"><code>data_full &lt;- left_join(data_full, data_rand_list)</code></pre>
+<pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
+</div>
+<div id="export-data" class="section level2">
+<h2>Export data</h2>
+<pre class="r"><code>write.table(data_full, file = &quot;../data/data_full.txt&quot;, quote = F, row.names = F, sep = &quot;\t&quot;)</code></pre>
 </div>
 </div>
 

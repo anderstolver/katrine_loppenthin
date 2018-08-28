@@ -30,7 +30,8 @@ list.files(path = "../data")
 ##  [7] "Kopi af Indtast s\303\270vndagbog.xls"
 ##  [8] "Variabeloversigt JR-Sleep.doc"        
 ##  [9] "data_full.txt"                        
-## [10] "watt-max test_baseline_follow-up.xls"
+## [10] "watt-max test_baseline_follow-up.xls" 
+## [11] "~$Follow-up PSG data.xlsx"
 ```
 
 Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.
