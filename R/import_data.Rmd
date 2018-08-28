@@ -1,0 +1,834 @@
+---
+title: 'JR-Sleep: Read data and tidy up data'
+author: "Anders Tolver"
+date: "2018"
+output: 
+  html_document:
+    toc: TRUE
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(hms) ### package for storing times
+library(tidyverse)
+library(lubridate)
+```
+
+# Read in data
+
+Kathrine Bjerre Løppenthin provided the following data files for the project
+
+```{r}
+list.files(path = "../data")
+```
+
+Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.
+
+## Randomisation list
+
+```{r}
+data_rand_list <- read_excel(path  = "../data/Intervention og kontrol.xlsx"
+                   , sheet = 1)
+```
+
+## PSQI, ESS, BRAF, fysakt, CES-Dep, fysfunk, EQ-5D
+
+
+Excel file containing 9 sheets. 
+
+First (=anamnese) and last (=Søvndagbog) sheets are  empty?
+
+Use instead files `Anamnese_baseline_followup.xls` and `Kopi af Indtast søvndagbog.xls` (-see code below).
+
+### Baseline data
+
+```{r}
+data_base_psqi <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 2)
+data_base_ess <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 3)
+data_base_bristol <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 4)
+data_base_fys_akt <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 5)
+data_base_dep <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 6)
+data_base_fys_funk <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 7)
+data_base_eq_5d <- read_excel(path  = "../data/Baseline data.xls", skip = 1
+                   , sheet = 8)
+
+```
+
+### Follow up
+
+Note that `.` and blanks have been used to indicate  missing values ...
+
+```{r}
+data_follow_psqi <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 1)
+data_follow_ess <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 2)
+data_follow_bristol <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 3)
+data_follow_fys_akt <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 4)
+data_follow_dep <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 5)
+data_follow_fys_funk <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 6)
+data_follow_eq_5d <- read_excel(path  = "../data/Follow-up data.xls", skip = 1, na = "."
+                   , sheet = 7)
+```
+
+Confirmed by reply to email on July 1st, 2018: Remove columns 21+22 for `data_follow_psqi`.
+
+```{r}
+data_follow_psqi <- data_follow_psqi[, -c(21, 22)]
+```
+
+## PSG
+
+Be careful to read in the following variables (encoded hour:min:sec)
+
+* Total søvntid (TST)
+* Søvnperiode (tid i seng) (Bedtime)
+* Indsovningstid/sleep onset (SO)
+* Søvnlatenstid (sleep_latency)
+* Rem latenstid (Rem_latency)
+* Wake after sleep onset (WASO)
+
+R reads in these variables in Date format. Below we extract only the time part.
+
+**NB: Make KBL confirm that variable wake_time has the right unit. What does WASO really measure? Could it be that WASO in data corresponds to variable called Awake in Variabeloversigt JR-Sleep. Variable Søvnmønster/beskrivelse not to be used?**
+
+
+### Baseline
+
+```{r warning = FALSE}
+data_base_psg <- read_excel(path  = "../data/Baseline PSG data NY.xlsx", sheet = 1, na = ".", skip = 1)
+data_base_psg <- mutate(data_base_psg,
+                          TST = format(TST, "%H:%M:%S"),
+                          Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO = format(SO, "%H:%M:%S"),
+sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency = format(REM_latency, "%H:%M:%S"),
+Wake_time = format(Wake_time, "%H:%M:%S")
+)
+
+data_base_psg <- dplyr::rename(data_base_psg
+                               , "WASO" ="waso"
+                               , "wake_time" = "Wake_time"
+                               , "sleep_effi" = "Sleep_effi") %>% select(-contains("nster/beskr"))
+
+
+
+data_base_psg
+```
+
+### Follow up
+
+```{r warning = FALSE}
+data_follow_psg <- read_excel(path  = "../data/Follow-up PSG data.xlsx", sheet = 1, na = ".")
+
+data_follow_psg <- mutate(data_follow_psg,
+                          TST = format(TST, "%H:%M:%S"),
+                          Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO = format(SO, "%H:%M:%S"),
+sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency = format(REM_latency, "%H:%M:%S"),
+wake_time = format(wake_time, "%H:%M:%S")
+)
+
+data_follow_psg <- select(data_follow_psg, -contains("nster/beskri"))
+```
+
+## 1. Anamnese (Baseline + follow up)
+
+```{r}
+data_base_anamnese <- read_excel(path  = "../data/Anamnese_baseline_followup.xls", sheet = 1, na = ".")
+data_follow_anamnese <- read_excel(path  = "../data/Anamnese_baseline_followup.xls", sheet = 2, na = ".")
+```
+
+Renaming variables according to key provided by Kathrine (see file `Variabeloversigt`).
+
+```{r}
+data_base_anamnese <- plyr::rename(data_base_anamnese
+             , replace = c("age" = "Age", "tend_joi" = "Tend_joi"
+                           , "job" = "Job", "smoking" = "Smoking") )
+data_follow_anamnese <- plyr::rename(data_follow_anamnese
+             , replace = c("tend_joi" = "Tend_joi"
+                           , "Koffein" = "koffein") )
+names(data_base_anamnese)
+names(data_follow_anamnese)
+```
+
+
+## Søvndagbog (Baseline + follow up)
+
+**Where to find data?**
+
+Excel sheet labelled `Søvndagbog` fra files `Baseline data.xls` and `Follow-up data.xls` does not contain any data. 
+
+Not obvious that variables of file `Kopi af Indtast søvndagbog.xls` correspond to variables listed in `Variabeloversigt JR-Sleep.doc` for `Polysomnografi`.
+
+**Need to read in and tidy up data from Søvndagbøger**
+
+# Construction of new variables
+
+## 2. PSQI
+
+Consult `scoringsmanual til PSQI.pdf`
+
+### Check for invalid data entries and correct errors
+
+```{r}
+apply(data_base_psqi[, -1], 2, unique)
+```
+
+```{r}
+apply(data_follow_psqi[, -1], 2, unique)
+```
+
+#### Question 1
+
+Change 24:00 to 00:00 and correct some obvious errors
+
+```{r}
+data_base_psqi$SP2_Spg_1_BA <- with(data_base_psqi, replace(SP2_Spg_1_BA, SP2_Spg_1_BA == "24.00", "00.00"))
+data_base_psqi$SP2_Spg_1_BA
+```
+
+Grundet inkonsistent brug af `.` eller `:` har der indsneget sig nogle fejl i indlæsning af data som rettes her (se Excel-ark)
+
+```{r}
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "23", "23.00"))
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "0.875", "21.00"))
+data_follow_psqi$SP2_Spg_1_FU <- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == "0.9375", "22.30"))
+data_follow_psqi$SP2_Spg_1_FU
+```
+
+#### Question 3
+
+```{r}
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="5.30", "05.30"))
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="6.30", "06.30"))
+data_base_psqi$SP2_Spg_3_BA <- with(data_base_psqi, replace(SP2_Spg_3_BA, SP2_Spg_3_BA =="7.00", "07.00"))
+data_base_psqi$SP2_Spg_3_BA
+```
+
+Reply by email on July 1st: confirmed that 60.00 be replaced by 06.00.
+
+```{r}
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="7", "07.00"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6.15", "06.15"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6.30", "06.30"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="8.30", "08.30"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="60.00", "06.00"))
+data_follow_psqi$SP2_Spg_3_FU <- with(data_follow_psqi, replace(SP2_Spg_3_FU, SP2_Spg_3_FU =="6", "06.00"))
+
+data_follow_psqi$SP2_Spg_3_FU
+```
+
+#### Question 4
+
+```{r}
+data_base_psqi$SP2_Spg_4_BA <- with(data_base_psqi, replace(SP2_Spg_4_BA, SP2_Spg_4_BA =="07.00", "7"))
+```
+
+#### Change time format of questions 1,3
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, SP2_Spg_1_time_BA = parse_time(gsub("\\.", ":", SP2_Spg_1_BA), format = "%H:%M"), SP2_Spg_3_time_BA = parse_time(gsub("\\.", ":", SP2_Spg_3_BA), format = "%H:%M"), psqi4_in_bed = SP2_Spg_3_time_BA - SP2_Spg_1_time_BA )
+data_base_psqi$psqi4_in_bed
+```
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, SP2_Spg_1_time_FU = parse_time(gsub("\\.", ":", SP2_Spg_1_FU), format = "%H:%M"), SP2_Spg_3_time_FU = parse_time(gsub("\\.", ":", SP2_Spg_3_FU), format = "%H:%M"), psqi4_in_bed = SP2_Spg_3_time_FU - SP2_Spg_1_time_FU )
+data_follow_psqi$psqi4_in_bed
+```
+
+## PSQI - component scores (Baseline)
+
+### Component 1: Subjective sleep quality
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi1 = SP2_Spg_6_BA)
+```
+
+### Component 2: Sleep latency
+
+Check carefully conversion to numerical score ....
+
+Confirmed by reply to email on July 1st, 2018 that 6 hours of sleep is converted to the value 2.
+
+```{r}
+data_base_psqi$SP2_Spg_2_BA_num <- cut(as.numeric(data_base_psqi$SP2_Spg_2_BA), breaks = c(0, 15, 30, 60, Inf)
+    , labels = c(0, 1, 2, 3))
+data_base_psqi <- mutate(data_base_psqi, psqi2_tmp = parse_integer(SP2_Spg_2_BA_num) + SP2_Spg_5A_BA)
+data_base_psqi <- mutate(data_base_psqi, psqi2 = parse_integer(cut(psqi2_tmp, breaks = c(0, 2, 4, 6, Inf), labels = c(0, 1, 2, 3))))
+with(data_base_psqi, table(psqi2, psqi2_tmp))
+```
+
+### Component 3: Sleep duration
+
+Check carefully conversion to numerical score ....
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi3 = parse_integer(cut(parse_double(data_base_psqi$SP2_Spg_4_BA), breaks = c(-Inf, 5, 6, 7, Inf)
+    , labels = c(3, 2, 1, 0))))
+table(data_base_psqi$psqi3, data_base_psqi$SP2_Spg_4_BA )
+```
+
+### Component 4: Habitual sleep efficiency
+
+Be very careful with conversion to time differences (bedtime after midnat causes some problems) ...
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi4_in_bed = 3600*24*(psqi4_in_bed < 0) + psqi4_in_bed
+       , psqi4_sleep_eff = 100 * 3600 * parse_double(SP2_Spg_4_BA) / parse_double(psqi4_in_bed)
+       , psqi4 = parse_integer(cut(psqi4_sleep_eff, breaks = c(0, 65, 75, 85, Inf), right = FALSE, labels = c(3, 2, 1, 0))))
+
+summary(data_base_psqi$psqi4_sleep_eff)
+```
+
+
+### Component 5: Sleep disturbances
+
+Check carefully conversion ...
+
+```{r}
+choose_vars <- paste("SP2_Spg_5", LETTERS[2:10], "_BA", sep = "")
+choose_vars
+data_base_psqi$psqi5_tmp <- apply(select(data_base_psqi, choose_vars), 1, sum)
+data_base_psqi <- mutate(data_base_psqi, psqi5 = parse_integer(cut(psqi5_tmp, breaks = c(-Inf, 0, 9, 18, 27, Inf)
+                                                     , labels = c(-1, 0, 1, 2, 3))))
+table(data_base_psqi$psqi5_tmp, data_base_psqi$psqi5)
+```
+
+### Component 6: Use of sleeping medication
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi6 = data_base_psqi$SP2_Spg_7_BA)
+```
+
+### Component 7: Daytime dysfunction
+
+```{r}
+data_base_psqi <- mutate(data_base_psqi, psqi7_tmp = SP2_Spg_8_BA + SP2_Spg_9_BA
+       , psqi7 = parse_integer(cut(psqi7_tmp, breaks = c(-Inf, 0, 2, 4, 6, Inf), labels = 0:4)))
+with(data_base_psqi, table(psqi7, psqi7_tmp))
+```
+
+### Global PSQI
+
+```{r}
+data_base_psqi$psqi_total <- apply(select(data_base_psqi, num_range(prefix = "psqi", range = 1:7)), 1, sum)
+```
+
+## PSQI - component scores (Follow up)
+
+### Component 1: Subjective sleep quality
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, psqi1 = SP2_Spg_6_FU)
+```
+
+### Component 2: Sleep latency
+
+Check carefully conversion to numerical score ....
+
+```{r}
+data_follow_psqi$SP2_Spg_2_FU_num <- parse_integer(cut(as.numeric(data_follow_psqi$SP2_Spg_2_FU), breaks = c( 0, 15, 30, 60, Inf)
+    , labels = c(0, 1, 2, 3)))
+data_follow_psqi <- mutate(data_follow_psqi, psqi2_tmp = SP2_Spg_2_FU_num + SP2_Spg_5A_FU)
+data_follow_psqi <- mutate(data_follow_psqi, psqi2 = parse_integer(cut(psqi2_tmp, breaks = c(-Inf, 0, 2, 4, 6)
+                                                         , labels = 0:3)))
+data_follow_psqi$psqi2_tmp
+data_follow_psqi$psqi2
+
+with(data_follow_psqi, table(psqi2, psqi2_tmp))
+```
+
+### Component 3: Sleep duration
+
+Check carefully conversion to numerical score ....
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, psqi3 = parse_integer(cut(parse_double(data_follow_psqi$SP2_Spg_4_FU), breaks = c(-Inf, 5, 6, 7, Inf)
+    , labels = c(3, 2, 1, 0))))
+table(data_follow_psqi$psqi3, data_follow_psqi$SP2_Spg_4_FU )
+```
+
+### Component 4: Habitual sleep efficiency
+
+NB: One subject `08-240713` sleeps more hours than he or she stays in bed resulting in sleep efficiency above 100. According to email from KBL on July 1st, 2018 no of hours sleept is change to 8.5 hours to obtain sleep efficiency of 100 %. 
+
+```{r}
+data_follow_psqi$SP2_Spg_4_FU <- replace(data_follow_psqi$SP2_Spg_4_FU, data_follow_psqi$ID_NUM == "08-240713", "8.5")
+```
+
+Be very careful with conversion to time differences (bedtime after midnat causes some problems) ...
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, psqi4_in_bed = 3600*24*(psqi4_in_bed < 0) + psqi4_in_bed
+       , psqi4_sleep_eff = 100 * 3600 * parse_double(SP2_Spg_4_FU) / parse_double(psqi4_in_bed)
+       , psqi4 = parse_integer(cut(psqi4_sleep_eff, breaks = c(0, 65, 75, 85, Inf), right = FALSE, labels = c(3, 2, 1, 0))))
+summary(data_follow_psqi$psqi4_sleep_eff)
+```
+
+
+
+### Component 5: Sleep disturbances
+
+Check carefully conversion ...
+
+```{r}
+choose_vars <- paste("SP2_Spg_5", LETTERS[2:10], "_FU", sep = "")
+choose_vars
+data_follow_psqi$psqi5_tmp <- apply(select(data_follow_psqi, choose_vars), 1, sum)
+data_follow_psqi <- mutate(data_follow_psqi, psqi5 = parse_integer(cut(psqi5_tmp, breaks = c(-Inf, 0, 9, 18, 27, Inf)
+                                                     , labels = c(-1, 0, 1, 2, 3))))
+table(data_follow_psqi$psqi5_tmp, data_follow_psqi$psqi5)
+```
+
+According to email fra KBL on July 1st, 2018 then question `SP2_Spg_5J_svar` just contains additional information and should not be used for computing the score.
+
+### Component 6: Use of sleeping medication
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, psqi6 = data_follow_psqi$SP2_Spg_7_FU)
+```
+
+### Component 7: Daytime dysfunction
+
+```{r}
+data_follow_psqi <- mutate(data_follow_psqi, psqi7_tmp = SP2_Spg_8_FU + SP2_Spg_9_FU
+       , psqi7 = parse_integer(cut(psqi7_tmp, breaks = c(-Inf, 0, 2, 4, 6, Inf), labels = 0:4)))
+with(data_follow_psqi, table(psqi7, psqi7_tmp))
+```
+
+### Global PSQI
+
+```{r}
+data_follow_psqi$psqi_total <- apply(select(data_follow_psqi, num_range(prefix = "psqi", range = 1:7)), 1, sum)
+```
+
+### Overview of component scores from PSQI
+
+
+```{r}
+select(data_follow_psqi, num_range("psqi", 1:7) )
+```
+
+**How to handle missing answers?**
+
+## 3. Epworth Sleepiness Scale (ESS)
+
+### Check raw data values (baseline + follow up)
+
+All items with take data values 0-3
+
+```{r}
+apply(data_base_ess[, -1], 2, table)
+apply(data_follow_ess[, -1], 2, table)
+```
+
+Count number of missing values 
+
+```{r}
+apply(data_base_ess[, 1 + 1:8], 2, function(z){sum(is.na(z))})
+apply(data_follow_ess[, 1 + 1:8], 2, function(z){sum(is.na(z))})
+
+```
+
+### Compute ESS sum score
+
+```{r}
+data_base_ess$ess_total <- apply(data_base_ess[, 1 + 1:8], 1, sum)
+data_follow_ess$ess_total <- apply(data_follow_ess[, 1 + 1:8], 1, sum)
+
+summary(data_base_ess$ess_total)
+summary(data_follow_ess$ess_total)
+```
+
+
+## 4. Bristol (BRAF)
+
+### Check  raw data values (baseline)
+
+Range of `SP4_Spg_1_BA` should be 0-10
+
+```{r}
+table(data_base_bristol[, 1 + 1])
+```
+
+Range of `SP4_Spg_2_BA` should be 0-7
+
+```{r}
+table(data_base_bristol[, 1 + 2])
+```
+
+Range of `SP4_Spg_3_BA` should be 0-2
+
+```{r}
+table(data_base_bristol[, 1 + 3])
+```
+
+Range of `SP4_Spg_5_BA- SP4_Spg_20_BA` should be 0-3
+
+```{r}
+raw_tab <- apply(data_base_bristol[, 1 + 4:20], 2, table)
+raw_tab
+```
+
+### Check  raw data values (follow up)
+
+Range of `SP4_Spg_1_BA` should be 0-10
+
+```{r}
+table(data_follow_bristol[, 1 + 1])
+```
+
+Range of `SP4_Spg_2_BA` should be 0-7
+
+```{r}
+table(data_follow_bristol[, 1 + 2])
+```
+
+Range of `SP4_Spg_3_BA` should be 0-2
+
+```{r}
+table(data_follow_bristol[, 1 + 3])
+```
+
+Range of `SP4_Spg_5_BA- SP4_Spg_20_BA` should be 0-3
+
+```{r}
+raw_tab <- apply(data_follow_bristol[, 1 + 4:20], 2, table)
+raw_tab
+```
+
+Be careful how to handle NAs ...
+
+Tabulate number of NAs
+
+```{r} 
+```
+
+### Compute sum scores from BRAF
+
+```{r}
+get_psqi_phys <- function(x){
+  m_score <- c(10, 7, 2, 3)
+  na_pos <- is.na(x)
+  res <- sum(x, na.rm = T)/sum(m_score[!na_pos]) * sum(m_score)
+  if((sum(na_pos) > 1)||(any(is.na(x[1:2])))){res <- NA}
+  return(res)
+}
+
+data_base_bristol$BRAF_phys <- apply(data_base_bristol[2:5], 1, get_psqi_phys)
+
+get_psqi_other <- function(x){
+  m_score <- rep(3, length(x))
+  na_pos <- is.na(x)
+  res <- sum(x, na.rm = T)/sum(m_score[!na_pos]) * sum(m_score)
+  if((sum(na_pos) > 1)){res <- NA}
+  return(res)
+}
+
+data_base_bristol$BRAF_living <- apply(data_base_bristol[, 1 + 5:11], 1, get_psqi_other)
+data_base_bristol$BRAF_cog <- apply(data_base_bristol[, 1 + 12:16], 1, get_psqi_other)
+data_base_bristol$BRAF_emo <- apply(data_base_bristol[, 1 + 17:20], 1, get_psqi_other)
+data_base_bristol$BRAF_total <- apply(dplyr::select(data_base_bristol, dplyr::contains("BRAF")), 1, sum)
+
+data_follow_bristol$BRAF_phys <- apply(data_follow_bristol[2:5], 1, get_psqi_phys)
+
+get_psqi_other <- function(x){
+  m_score <- rep(3, length(x))
+  na_pos <- is.na(x)
+  res <- sum(x, na.rm = T)/sum(m_score[!na_pos]) * sum(m_score)
+  if((sum(na_pos) > 1)){res <- NA}
+  return(res)
+}
+
+data_follow_bristol$BRAF_living <- apply(data_follow_bristol[, 1 + 5:11], 1, get_psqi_other)
+data_follow_bristol$BRAF_cog <- apply(data_follow_bristol[, 1 + 12:16], 1, get_psqi_other)
+data_follow_bristol$BRAF_emo <- apply(data_follow_bristol[, 1 + 17:20], 1, get_psqi_other)
+data_follow_bristol$BRAF_total <- apply(dplyr::select(data_follow_bristol, dplyr::contains("BRAF")), 1, sum)
+
+```
+
+```{r}
+summary(data_base_bristol$BRAF_phys)
+summary(data_base_bristol$BRAF_living)
+summary(data_base_bristol$BRAF_cog)
+summary(data_base_bristol$BRAF_emo)
+summary(data_base_bristol$BRAF_total)
+
+summary(data_follow_bristol$BRAF_phys)
+summary(data_follow_bristol$BRAF_living)
+summary(data_follow_bristol$BRAF_cog)
+summary(data_follow_bristol$BRAF_emo)
+summary(data_follow_bristol$BRAF_total)
+```
+
+## 5. Fysisik aktivitetsniveau
+
+Remove all comments from baseline questionnaire (col 2 -)
+
+```{r}
+data_base_fys_akt <- data_base_fys_akt[, 1:2]
+```
+
+Check raw data values
+
+```{r}
+table(data_base_fys_akt$SP5_Spg_1_BA)
+table(data_follow_fys_akt$SP5_Spg_1_FU)
+```
+
+
+## 6. Center for Epidemiologic studies depression scale
+
+### Check raw data values (baseline)
+
+Range should be 0-3
+```{r}
+apply(data_base_dep[, -1], 2, function(z){table(z)})
+```
+
+### Check raw data values (follow up)
+
+Range should be 0-3
+```{r}
+apply(data_follow_dep[, -1], 2, table)
+```
+### Compute sum scores from CES-D
+
+```{r}
+data_base_dep$CES_D_total <- apply(data_base_dep[, -1], 1, sum)
+data_follow_dep$CES_D_total <- apply(data_follow_dep[, -1], 1, sum)
+```
+
+**KBL has not yet confirmed if conversion of positively / negatively worded items to numbers 0,1,2,3 is correct. Check up on this and change if necessary.**
+
+## 7. Fysisk funktion i det daglige (HAQ)
+
+Ignore scoring for aids/devices so far i.e. consider only items 1-20
+
+```{r}
+names(data_base_fys_funk)
+```
+
+### Baseline (HAQ)
+
+Check raw data values (allowed range: 0 - 3)
+
+```{r}
+apply(data_base_fys_funk[, 1 + 1:20], 2, table)
+```
+
+Correct / change invalid entry `12` in item 7? According to email fra KBL on July 1st, 2018 value `12` should be replaced by `1`.
+
+```{r}
+data_base_fys_funk$SP7_Spg_7_BA <- replace(data_base_fys_funk$SP7_Spg_7_BA, data_base_fys_funk$SP7_Spg_7_BA == 12, 1)
+```
+
+
+**Confirm method for computing alternative HAQ-DI score**
+
+Reply by KBL on July 1st, 2018: AT may decide. According to scoring manual alternative HAQ-DI is the average of each category score given that at least six categories has a score. However, it is not obvious what is meant be the score for a category since each category consists of several sub-categories. Here we use the procedure indicated in the manual under Standard HAQ-DI where category score is the highest sub-category score from each category. 
+
+
+
+```{r}
+data_base_fys_funk$haq1 <- apply(data_base_fys_funk[, 1 + 1:2], 1, max, na.rm = T)
+data_base_fys_funk$haq2 <- apply(data_base_fys_funk[, 1 + 3:4], 1, max, na.rm = T)
+data_base_fys_funk$haq3 <- apply(data_base_fys_funk[, 1 + 5:7], 1, max, na.rm = T)
+data_base_fys_funk$haq4 <- apply(data_base_fys_funk[, 1 + 8:9], 1, max, na.rm = T)
+data_base_fys_funk$haq5 <- apply(data_base_fys_funk[, 1 + 10:12], 1, max, na.rm = T)
+data_base_fys_funk$haq6 <- apply(data_base_fys_funk[, 1 + 13:14], 1, max, na.rm = T)
+data_base_fys_funk$haq7 <- apply(data_base_fys_funk[, 1 + 15:17], 1, max, na.rm = T)
+data_base_fys_funk$haq8 <- apply(data_base_fys_funk[, 1 + 18:20], 1, max, na.rm = T)
+data_base_fys_funk$haq_NA <- apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, function(z){sum(!is.na(z))})
+
+data_base_fys_funk$haq_total <- apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, mean)
+
+data_base_fys_funk$haq_total <- replace(data_base_fys_funk$haq_total, data_base_fys_funk$haq_NA < 6, NA)
+```
+
+Check scores for each of eight categories
+
+```{r}
+apply(select(data_base_fys_funk, num_range(prefix = "haq", range = 1:8)), 2, table)
+```
+
+### Follow up (HAQ)
+
+Check raw data values (allowed range: 0 - 3)
+
+```{r}
+apply(data_follow_fys_funk[, 1 + 1:20], 2, table)
+```
+
+**Confirm method for computing alternative HAQ-DI score**
+
+See comment about for baseline data.
+
+Technical note:
+
+With `na.rm = T` then `max` function returns `-Inf` for an empty vector. A user modified version returning `NA` for an empty vector is used here.
+
+```{r}
+my_max <- function(x, ...){
+  if(all(is.na(x))){
+    return(NA)
+  }
+  else{
+    return(max(x, ...))
+  }
+  
+}
+
+data_follow_fys_funk$haq1 <- apply(data_follow_fys_funk[, 1 + 1:2], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq2 <- apply(data_follow_fys_funk[, 1 + 3:4], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq3 <- apply(data_follow_fys_funk[, 1 + 5:7], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq4 <- apply(data_follow_fys_funk[, 1 + 8:9], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq5 <- apply(data_follow_fys_funk[, 1 + 10:12], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq6 <- apply(data_follow_fys_funk[, 1 + 13:14], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq7 <- apply(data_follow_fys_funk[, 1 + 15:17], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq8 <- apply(data_follow_fys_funk[, 1 + 18:20], 1, my_max, na.rm = T)
+data_follow_fys_funk$haq_NA <- apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, function(z){sum(!is.na(z))})
+
+data_follow_fys_funk$haq_total <- apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 1, mean)
+
+data_follow_fys_funk$haq_total <- replace(data_follow_fys_funk$haq_total, data_follow_fys_funk$haq_NA < 6, NA)
+
+```
+
+Check scores for each of eight categories
+
+```{r}
+apply(select(data_follow_fys_funk, num_range(prefix = "haq", range = 1:8)), 2, table)
+```
+
+
+## 8. EQ-5D Helbredsspørgeskema
+
+Check raw data values (items 1-5)
+
+```{r}
+apply(data_base_eq_5d[, -c(1, 7)], 2, table)
+apply(data_follow_eq_5d[, -c(1, 7)], 2, table)
+```
+
+Check raw data values (items 6)
+
+```{r}
+summary(data_base_eq_5d$SP8_Spg_6_BA)
+summary(data_follow_eq_5d$SP8_Spg_6_FU)
+```
+
+## 9. Søvndagbog
+
+
+
+# Export cleaned data
+
+**Overvej hvilken version af join der skal benyttes for at sikre mod slåfejl i id nummer**
+
+The following data sets are combined (`ID_NUM` used as key ... remember to rename ID variable if necessary).
+
+Check that the correct number of variables are selected from each data set:
+
+* Anamnese: remove empty variable "Baseline" and replace by "time" (15 + 1 / ID + 1 / time)
+* PSQI: component scores and total (8)
+* ESS: sum score (1)
+* Bristol: four BRAF components and total (5)
+* Fysisk aktivitetsniveau: kun een variabel (1)
+* CES-D: sum score (1)
+* Fysisk funktion: seven components and total (8)
+* EQ-5D Helbredsspørgeskema (6)
+
+## Extract and combine baseline data
+
+```{r}
+data_base <- select(data_base_anamnese, - Baseline) %>% mutate(time = "baseline") %>% rename("ID_NUM" = "ID-NR")
+
+tmp_base <- select(data_base_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_ess, ID_NUM, ess_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_bristol, ID_NUM, contains("BRAF_")) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- data_base_fys_akt %>% rename(fys_akt = "SP5_Spg_1_BA")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_dep, ID_NUM, CES_D_total) %>% mutate(time = "baseline")
+data_base <- left_join(data_base, tmp_base)
+
+tmp_base <- select(data_base_fys_funk, c(1, num_range(prefix = "haq", range = 1:7), matches("haq_total")))
+data_base <- left_join(data_base, tmp_base)
+
+data_base <- left_join(data_base, data_base_eq_5d)
+
+data_base <- left_join(data_base, data_base_psg)
+```
+
+Display variables of cleaned data set
+
+```{r}
+dim(data_base)
+names(data_base)
+```
+
+## Extract and combine follow up data
+
+Note that sociodemographic variables are not collected twice implying that anamnese data contains fewer variables at follow up. Make sure to fill in these variables before merging data from baseline and follow up (this is done below).
+
+```{r}
+data_follow <- select(data_follow_anamnese, -contains("Follow-up")) %>% mutate(time = "follow_up") %>% rename("ID_NUM" = "ID-nr")
+
+data_follow <- left_join(data_follow, select(data_base, ID_NUM, Sex, Age, Disease_dura, Comobid, Educa, Job, Live_alone, Smoking, alcohol))
+```
+
+```{r}
+tmp_follow <- select(data_follow_psqi, c(1, num_range(prefix = "psqi", range = 1:7), matches("psqi_total"))) %>% mutate(time = "follow_up")
+data_follow <- left_join(data_follow, tmp_follow)
+
+tmp_follow <- select(data_follow_ess, ID_NUM, ess_total) %>% mutate(time = "follow_up")
+data_follow <- left_join(data_follow, tmp_follow)
+
+tmp_follow <- select(data_follow_bristol, ID_NUM, contains("BRAF_")) %>% mutate(time = "follow_up")
+data_follow <- left_join(data_follow, tmp_follow)
+
+tmp_follow <- data_follow_fys_akt %>% rename(fys_akt = "SP5_Spg_1_FU")
+data_follow <- left_join(data_follow, tmp_follow)
+
+tmp_follow <- select(data_follow_dep, ID_NUM, CES_D_total) %>% mutate(time = "follow_up")
+data_follow <- left_join(data_follow, tmp_follow)
+
+tmp_follow <- select(data_follow_fys_funk, c(1, num_range(prefix = "haq", range = 1:7), matches("haq_total")))
+data_follow <- left_join(data_follow, tmp_follow)
+
+data_follow <- left_join(data_follow, data_follow_eq_5d)
+
+data_follow <- left_join(data_follow, data_follow_psg)
+```
+
+## Combine data from baseline and follow up
+
+Be careful to rename questions from EQ-5D from BA and FU to common name. **Not done yet**.
+
+```{r}
+data_full <- bind_rows(data_base, data_follow)
+dim(data_full)
+names(data_full)
+```

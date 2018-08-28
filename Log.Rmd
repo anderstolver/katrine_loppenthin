@@ -20,6 +20,8 @@ knitr::opts_chunk$set(echo = TRUE)
 * 2018: beregning af componentscores for PSQI + CES-D (3 t)
 * 2018: kombiner data til samlet datasæt (1.5 t)
 * 2018: midlertidigt kombineret baseline data + lang email. (1.5 t)
+* 2018: opfølgning på svar på lang email (1.25 t)
+* 2018: indlæsning og klargøring af data fra PSG (2 t)
 
 # Log
 
@@ -70,3 +72,11 @@ rename variable fra Anamnese som anført i KBLs nøgle.
 Kvalitetskontrol og beregning af sumscorer for ESS samt BRAF skemaer.
 
 Beregning af componentscores for PSQI.
+
+## August 2018
+
+Opfølgning (rensning af data) på baggrund af email d. 1/7-2018. Data fra PSG hentes omkring 2/8, hvorefter analyser påbegyndes. 
+
+Det er stadig uklart, hvad der skal laves med data fra søvndagbøger og dette arbejde er ikke påbegyndt.
+
+Data fra PSG udleveret på USB. PSG data oprenset og indlæst i R. 
