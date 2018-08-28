@@ -4,8 +4,8 @@ author: "Anders Tolver"
 date: "2018"
 output: 
   html_document:
-    toc: TRUE
     keep_md: TRUE
+    toc: TRUE
     code_folding: hide
 ---
 
@@ -21,15 +21,16 @@ list.files(path = "../data")
 ```
 
 ```
-## [1] "Anamnese_baseline_followup.xls"       
-## [2] "Baseline PSG data NY.xlsx"            
-## [3] "Baseline data.xls"                    
-## [4] "Follow-up PSG data.xlsx"              
-## [5] "Follow-up data.xls"                   
-## [6] "Intervention og kontrol.xlsx"         
-## [7] "Kopi af Indtast s\303\270vndagbog.xls"
-## [8] "Variabeloversigt JR-Sleep.doc"        
-## [9] "watt-max test_baseline_follow-up.xls"
+##  [1] "Anamnese_baseline_followup.xls"       
+##  [2] "Baseline PSG data NY.xlsx"            
+##  [3] "Baseline data.xls"                    
+##  [4] "Follow-up PSG data.xlsx"              
+##  [5] "Follow-up data.xls"                   
+##  [6] "Intervention og kontrol.xlsx"         
+##  [7] "Kopi af Indtast s\303\270vndagbog.xls"
+##  [8] "Variabeloversigt JR-Sleep.doc"        
+##  [9] "data_full.txt"                        
+## [10] "watt-max test_baseline_follow-up.xls"
 ```
 
 Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.
@@ -40,6 +41,36 @@ Reply to email on July 1st, 2018: data files on Polysomnography are still missin
 ```r
 data_rand_list <- read_excel(path  = "../data/Intervention og kontrol.xlsx"
                    , sheet = 1)
+data_rand_list <- dplyr::rename(data_rand_list, "ID_NUM" = "ID-nummer")
+```
+
+Check levels
+
+
+```r
+unique(data_rand_list$Randomisering)
+```
+
+```
+## [1] "kontrol"       "Intervention"  "Interventkion" "Kontrol"
+```
+
+Relabel factor levels
+
+
+```r
+data_rand_list <- mutate(data_rand_list, Randomisering = fct_collapse(Randomisering, control = c("kontrol", "Kontrol"), intervention = c("Intervention", "Interventkion")))
+```
+
+Check new encoding of groups
+
+```r
+unique(data_rand_list$Randomisering)
+```
+
+```
+## [1] control      intervention
+## Levels: intervention control
 ```
 
 ## PSQI, ESS, BRAF, fysakt, CES-Dep, fysfunk, EQ-5D
@@ -113,6 +144,8 @@ Be careful to read in the following variables (encoded hour:min:sec)
 
 R reads in these variables in Date format. Below we extract only the time part.
 
+However we also make numerical version of relevant variables measuring the duration of an interval.
+
 **NB: Make KBL confirm that variable wake_time has the right unit. What does WASO really measure? Could it be that WASO in data corresponds to variable called Awake in Variabeloversigt JR-Sleep. Variable Søvnmønster/beskrivelse not to be used?**
 
 
@@ -122,42 +155,24 @@ R reads in these variables in Date format. Below we extract only the time part.
 ```r
 data_base_psg <- read_excel(path  = "../data/Baseline PSG data NY.xlsx", sheet = 1, na = ".", skip = 1)
 data_base_psg <- mutate(data_base_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, "%H:%M:%S"),
                           Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, "%H:%M:%S"),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, "%H:%M:%S"),
+Wake_time_num = hour(Wake_time) + minute(Wake_time)/60 + second(Wake_time)/3600,
 Wake_time = format(Wake_time, "%H:%M:%S")
 )
 
 data_base_psg <- dplyr::rename(data_base_psg
                                , "WASO" ="waso"
                                , "wake_time" = "Wake_time"
+                               , "wake_time_num" = "Wake_time_num"
                                , "sleep_effi" = "Sleep_effi") %>% select(-contains("nster/beskr"))
-
-
-
-data_base_psg
-```
-
-```
-## # A tibble: 38 x 22
-##    ID_NUM TST   Bedtime sleep_effi SO    sleep_latency REM_latency  WASO
-##    <chr>  <chr> <chr>        <dbl> <chr> <chr>         <chr>       <dbl>
-##  1 01-18~ 05:3~ 06:33:~      0.84  23:1~ 00:04:00      00:55:00       33
-##  2 02-21~ 07:2~ 07:55:~      0.93  23:1~ 00:07:30      03:13:30       26
-##  3 03-28~ 05:5~ 06:00:~      0.968 00:4~ 00:01:00      01:40:30        8
-##  4 04-28~ 05:2~ 05:50:~      0.903 00:4~ 00:12:00      01:00:00       31
-##  5 05-28~ 06:0~ 06:31:~      0.924 00:2~ 00:01:30      01:03:00       10
-##  6 06-03~ 05:3~ 06:04:~      0.852 00:1~ 00:17:00      01:05:30       18
-##  7 07-09~ 07:0~ 07:17:~      0.961 23:5~ 00:03:00      01:06:00       14
-##  8 08-24~ 07:3~ 08:03:~      0.907 22:4~ 00:05:30      02:29:30       23
-##  9 09-24~ 08:2~ 08:52:~      0.939 22:5~ 00:02:00      00:40:00       35
-## 10 10-24~ 06:0~ 06:30:~      0.922 23:0~ 01:00:00      01:01:00       21
-## # ... with 28 more rows, and 14 more variables: Arous <dbl>,
-## #   wake_time <chr>, N1 <dbl>, N2 <dbl>, N3 <dbl>, REM <dbl>, AHI <dbl>,
-## #   LM <dbl>, PLM <dbl>, OSA <dbl>, Mix_apnea <dbl>, Cen_apnea <dbl>,
-## #   Hyp_nea <dbl>, Desat <dbl>
 ```
 
 ### Follow up
@@ -167,11 +182,16 @@ data_base_psg
 data_follow_psg <- read_excel(path  = "../data/Follow-up PSG data.xlsx", sheet = 1, na = ".")
 
 data_follow_psg <- mutate(data_follow_psg,
+                          TST_num = hour(TST) + minute(TST)/60 + second(TST)/3600,
                           TST = format(TST, "%H:%M:%S"),
                           Bedtime = format(Bedtime,"%H:%M:%S"),
+                          SO_num = hour(SO) + minute(SO)/60 + second(SO)/3600,
                           SO = format(SO, "%H:%M:%S"),
+                          sleep_latency_num = hour(sleep_latency) + minute(sleep_latency)/60 + second(sleep_latency)/3600,
 sleep_latency = format(sleep_latency, "%H:%M:%S"),
+REM_latency_num = hour(REM_latency) + minute(REM_latency)/60 + second(REM_latency)/3600,
 REM_latency = format(REM_latency, "%H:%M:%S"),
+wake_time_num = hour(wake_time) + minute(wake_time)/60 + second(wake_time)/3600,
 wake_time = format(wake_time, "%H:%M:%S")
 )
 
@@ -2270,7 +2290,7 @@ dim(data_base)
 ```
 
 ```
-## [1] 38 68
+## [1] 38 73
 ```
 
 ```r
@@ -2278,23 +2298,31 @@ names(data_base)
 ```
 
 ```
-##  [1] "ID_NUM"        "Sex"           "Age"           "Swol_joi"     
-##  [5] "Tend_joi"      "DAS"           "HGB"           "CRP"          
-##  [9] "Disease_dura"  "Comobid"       "Educa"         "Job"          
-## [13] "Live_alone"    "Smoking"       "alcohol"       "koffein"      
-## [17] "time"          "psqi1"         "psqi2"         "psqi3"        
-## [21] "psqi4"         "psqi5"         "psqi6"         "psqi7"        
-## [25] "psqi_total"    "ess_total"     "BRAF_phys"     "BRAF_living"  
-## [29] "BRAF_cog"      "BRAF_emo"      "BRAF_total"    "fys_akt"      
-## [33] "CES_D_total"   "haq1"          "haq2"          "haq3"         
-## [37] "haq4"          "haq5"          "haq6"          "haq7"         
-## [41] "haq_total"     "SP8_Spg_1_BA"  "SP8_Spg_2_BA"  "SP8_Spg_3_BA" 
-## [45] "SP8_Spg_4_BA"  "SP8_Spg_5_BA"  "SP8_Spg_6_BA"  "TST"          
-## [49] "Bedtime"       "sleep_effi"    "SO"            "sleep_latency"
-## [53] "REM_latency"   "WASO"          "Arous"         "wake_time"    
-## [57] "N1"            "N2"            "N3"            "REM"          
-## [61] "AHI"           "LM"            "PLM"           "OSA"          
-## [65] "Mix_apnea"     "Cen_apnea"     "Hyp_nea"       "Desat"
+##  [1] "ID_NUM"            "Sex"               "Age"              
+##  [4] "Swol_joi"          "Tend_joi"          "DAS"              
+##  [7] "HGB"               "CRP"               "Disease_dura"     
+## [10] "Comobid"           "Educa"             "Job"              
+## [13] "Live_alone"        "Smoking"           "alcohol"          
+## [16] "koffein"           "time"              "psqi1"            
+## [19] "psqi2"             "psqi3"             "psqi4"            
+## [22] "psqi5"             "psqi6"             "psqi7"            
+## [25] "psqi_total"        "ess_total"         "BRAF_phys"        
+## [28] "BRAF_living"       "BRAF_cog"          "BRAF_emo"         
+## [31] "BRAF_total"        "fys_akt"           "CES_D_total"      
+## [34] "haq1"              "haq2"              "haq3"             
+## [37] "haq4"              "haq5"              "haq6"             
+## [40] "haq7"              "haq_total"         "SP8_Spg_1_BA"     
+## [43] "SP8_Spg_2_BA"      "SP8_Spg_3_BA"      "SP8_Spg_4_BA"     
+## [46] "SP8_Spg_5_BA"      "SP8_Spg_6_BA"      "TST"              
+## [49] "Bedtime"           "sleep_effi"        "SO"               
+## [52] "sleep_latency"     "REM_latency"       "WASO"             
+## [55] "Arous"             "wake_time"         "N1"               
+## [58] "N2"                "N3"                "REM"              
+## [61] "AHI"               "LM"                "PLM"              
+## [64] "OSA"               "Mix_apnea"         "Cen_apnea"        
+## [67] "Hyp_nea"           "Desat"             "TST_num"          
+## [70] "SO_num"            "sleep_latency_num" "REM_latency_num"  
+## [73] "wake_time_num"
 ```
 
 ## Extract and combine follow up data
@@ -2394,7 +2422,7 @@ dim(data_full)
 ```
 
 ```
-## [1] 76 74
+## [1] 76 79
 ```
 
 ```r
@@ -2402,23 +2430,48 @@ names(data_full)
 ```
 
 ```
-##  [1] "ID_NUM"        "Sex"           "Age"           "Swol_joi"     
-##  [5] "Tend_joi"      "DAS"           "HGB"           "CRP"          
-##  [9] "Disease_dura"  "Comobid"       "Educa"         "Job"          
-## [13] "Live_alone"    "Smoking"       "alcohol"       "koffein"      
-## [17] "time"          "psqi1"         "psqi2"         "psqi3"        
-## [21] "psqi4"         "psqi5"         "psqi6"         "psqi7"        
-## [25] "psqi_total"    "ess_total"     "BRAF_phys"     "BRAF_living"  
-## [29] "BRAF_cog"      "BRAF_emo"      "BRAF_total"    "fys_akt"      
-## [33] "CES_D_total"   "haq1"          "haq2"          "haq3"         
-## [37] "haq4"          "haq5"          "haq6"          "haq7"         
-## [41] "haq_total"     "SP8_Spg_1_BA"  "SP8_Spg_2_BA"  "SP8_Spg_3_BA" 
-## [45] "SP8_Spg_4_BA"  "SP8_Spg_5_BA"  "SP8_Spg_6_BA"  "TST"          
-## [49] "Bedtime"       "sleep_effi"    "SO"            "sleep_latency"
-## [53] "REM_latency"   "WASO"          "Arous"         "wake_time"    
-## [57] "N1"            "N2"            "N3"            "REM"          
-## [61] "AHI"           "LM"            "PLM"           "OSA"          
-## [65] "Mix_apnea"     "Cen_apnea"     "Hyp_nea"       "Desat"        
-## [69] "SP8_Spg_1_FU"  "SP8_Spg_2_FU"  "SP8_Spg_3_FU"  "SP8_Spg_4_FU" 
-## [73] "SP8_Spg_5_FU"  "SP8_Spg_6_FU"
+##  [1] "ID_NUM"            "Sex"               "Age"              
+##  [4] "Swol_joi"          "Tend_joi"          "DAS"              
+##  [7] "HGB"               "CRP"               "Disease_dura"     
+## [10] "Comobid"           "Educa"             "Job"              
+## [13] "Live_alone"        "Smoking"           "alcohol"          
+## [16] "koffein"           "time"              "psqi1"            
+## [19] "psqi2"             "psqi3"             "psqi4"            
+## [22] "psqi5"             "psqi6"             "psqi7"            
+## [25] "psqi_total"        "ess_total"         "BRAF_phys"        
+## [28] "BRAF_living"       "BRAF_cog"          "BRAF_emo"         
+## [31] "BRAF_total"        "fys_akt"           "CES_D_total"      
+## [34] "haq1"              "haq2"              "haq3"             
+## [37] "haq4"              "haq5"              "haq6"             
+## [40] "haq7"              "haq_total"         "SP8_Spg_1_BA"     
+## [43] "SP8_Spg_2_BA"      "SP8_Spg_3_BA"      "SP8_Spg_4_BA"     
+## [46] "SP8_Spg_5_BA"      "SP8_Spg_6_BA"      "TST"              
+## [49] "Bedtime"           "sleep_effi"        "SO"               
+## [52] "sleep_latency"     "REM_latency"       "WASO"             
+## [55] "Arous"             "wake_time"         "N1"               
+## [58] "N2"                "N3"                "REM"              
+## [61] "AHI"               "LM"                "PLM"              
+## [64] "OSA"               "Mix_apnea"         "Cen_apnea"        
+## [67] "Hyp_nea"           "Desat"             "TST_num"          
+## [70] "SO_num"            "sleep_latency_num" "REM_latency_num"  
+## [73] "wake_time_num"     "SP8_Spg_1_FU"      "SP8_Spg_2_FU"     
+## [76] "SP8_Spg_3_FU"      "SP8_Spg_4_FU"      "SP8_Spg_5_FU"     
+## [79] "SP8_Spg_6_FU"
 ```
+
+
+```r
+data_full <- left_join(data_full, data_rand_list)
+```
+
+```
+## Joining, by = "ID_NUM"
+```
+
+## Export data
+
+
+```r
+write.table(data_full, file = "../data/data_full.txt", quote = F, row.names = F, sep = "\t")
+```
+
