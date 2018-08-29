@@ -159,6 +159,7 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#anamnese-baseline-follow-up">1. Anamnese (Baseline + follow up)</a></li>
 <li><a href="#svndagbog-baseline-follow-up">Søvndagbog (Baseline + follow up)</a></li>
+<li><a href="#watt-max-test">Watt max test</a></li>
 </ul></li>
 <li><a href="#construction-of-new-variables">Construction of new variables</a><ul>
 <li><a href="#psqi">2. PSQI</a><ul>
@@ -229,8 +230,7 @@ $(document).ready(function () {
 ##  [7] &quot;Kopi af Indtast s\303\270vndagbog.xls&quot;
 ##  [8] &quot;Variabeloversigt JR-Sleep.doc&quot;        
 ##  [9] &quot;data_full.txt&quot;                        
-## [10] &quot;watt-max test_baseline_follow-up.xls&quot; 
-## [11] &quot;~$Baseline PSG data NY.xlsx&quot;</code></pre>
+## [10] &quot;watt-max test_baseline_follow-up.xls&quot;</code></pre>
 <p>Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.</p>
 <div id="randomisation-list" class="section level2">
 <h2>Randomisation list</h2>
@@ -375,6 +375,53 @@ names(data_base_anamnese)</code></pre>
 <p>Excel sheet labelled <code>Søvndagbog</code> fra files <code>Baseline data.xls</code> and <code>Follow-up data.xls</code> does not contain any data.</p>
 <p>Not obvious that variables of file <code>Kopi af Indtast søvndagbog.xls</code> correspond to variables listed in <code>Variabeloversigt JR-Sleep.doc</code> for <code>Polysomnografi</code>.</p>
 <p><strong>Need to read in and tidy up data from Søvndagbøger</strong></p>
+</div>
+<div id="watt-max-test" class="section level2">
+<h2>Watt max test</h2>
+<pre class="r"><code>data_watt &lt;- read_excel(path  = &quot;../data/watt-max test_baseline_follow-up.xls&quot;, sheet = 1, na = &quot;.&quot;, skip = 1)
+data_watt</code></pre>
+<pre><code>## # A tibble: 38 x 5
+##    X__1       Baseline `post-test` Baseline__1 `post-test__1`
+##    &lt;chr&gt;         &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;          &lt;dbl&gt;
+##  1 01-180613      2.06        1.71        27.4           23.4
+##  2 02-210613      2.17        2.25        28.5           29.9
+##  3 03-280613      1.3         1.6         18.1           22.2
+##  4 04-280613      1.67        2.16        19.5           25.8
+##  5 05-280613      1.25        1.47        18.4           21.6
+##  6 06-030713      1.59        1.58        25.6           25.5
+##  7 07-090713      2.44        2.41        22.8           22.2
+##  8 08-24-0713     1.76        2.16        24.8           30.4
+##  9 09-240713      1.85        1.91        33.6           34.9
+## 10 10-240713      1.57        1.49        20.8           19.6
+## # ... with 28 more rows</code></pre>
+<p>Note that there is an error for subject <code>08-24-0713</code> which should be <code>08-240713</code></p>
+<pre class="r"><code>data_watt[data_watt$X__1 ==&quot;08-24-0713&quot;, 1] &lt;- &quot;08-240713&quot;</code></pre>
+<p>Gather data by stacking columns for baseline and follow_up data.</p>
+<pre class="r"><code>data_watt_ilt &lt;- select(data_watt, 1:3) %&gt;%
+  dplyr::rename(&quot;ID_NUM&quot; = &quot;X__1&quot;, &quot;baseline&quot; = &quot;Baseline&quot;, &quot;follow_up&quot; = &quot;post-test&quot;) %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;iltoptagelse&quot;, 2:3)
+
+data_watt_kondi &lt;- select(data_watt, c(1, 4:5)) %&gt;%
+  dplyr::rename(&quot;ID_NUM&quot; = &quot;X__1&quot;, &quot;baseline&quot; = &quot;Baseline__1&quot;, &quot;follow_up&quot; = &quot;post-test__1&quot;) %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;kondi&quot;, 2:3)
+
+data_watt0 &lt;- left_join(data_watt_ilt, data_watt_kondi)</code></pre>
+<pre><code>## Joining, by = c(&quot;ID_NUM&quot;, &quot;time&quot;)</code></pre>
+<pre class="r"><code>data_watt0</code></pre>
+<pre><code>## # A tibble: 76 x 4
+##    ID_NUM    time     iltoptagelse kondi
+##    &lt;chr&gt;     &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
+##  1 01-180613 baseline         2.06  27.4
+##  2 02-210613 baseline         2.17  28.5
+##  3 03-280613 baseline         1.3   18.1
+##  4 04-280613 baseline         1.67  19.5
+##  5 05-280613 baseline         1.25  18.4
+##  6 06-030713 baseline         1.59  25.6
+##  7 07-090713 baseline         2.44  22.8
+##  8 08-240713 baseline         1.76  24.8
+##  9 09-240713 baseline         1.85  33.6
+## 10 10-240713 baseline         1.57  20.8
+## # ... with 66 more rows</code></pre>
 </div>
 </div>
 <div id="construction-of-new-variables" class="section level1">
@@ -1997,6 +2044,8 @@ dim(data_full)</code></pre>
 ## [73] &quot;wake_time_num&quot;</code></pre>
 <pre class="r"><code>data_full &lt;- left_join(data_full, data_rand_list)</code></pre>
 <pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
+<pre class="r"><code>data_full &lt;- left_join(data_full, data_watt0)</code></pre>
+<pre><code>## Joining, by = c(&quot;ID_NUM&quot;, &quot;time&quot;)</code></pre>
 </div>
 <div id="export-data" class="section level2">
 <h2>Export data</h2>
