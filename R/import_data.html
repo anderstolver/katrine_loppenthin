@@ -230,7 +230,7 @@ $(document).ready(function () {
 ##  [8] &quot;Variabeloversigt JR-Sleep.doc&quot;        
 ##  [9] &quot;data_full.txt&quot;                        
 ## [10] &quot;watt-max test_baseline_follow-up.xls&quot; 
-## [11] &quot;~$Follow-up PSG data.xlsx&quot;</code></pre>
+## [11] &quot;~$Baseline PSG data NY.xlsx&quot;</code></pre>
 <p>Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.</p>
 <div id="randomisation-list" class="section level2">
 <h2>Randomisation list</h2>
@@ -1843,6 +1843,20 @@ data_follow_fys_funk$haq_total &lt;- replace(data_follow_fys_funk$haq_total, dat
 <pre class="r"><code>summary(data_follow_eq_5d$SP8_Spg_6_FU)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
 ##   20.00   60.00   75.00   69.71   86.50   99.00       3</code></pre>
+<p>Rename variables</p>
+<pre class="r"><code>data_base_eq_5d &lt;- dplyr::rename(data_base_eq_5d, &quot;eq_5d_1&quot; = &quot;SP8_Spg_1_BA&quot;
+              , &quot;eq_5d_2&quot; = &quot;SP8_Spg_2_BA&quot;
+              , &quot;eq_5d_3&quot; = &quot;SP8_Spg_3_BA&quot;
+              , &quot;eq_5d_4&quot; = &quot;SP8_Spg_4_BA&quot;
+              , &quot;eq_5d_5&quot; = &quot;SP8_Spg_5_BA&quot;
+              , &quot;eq_5d_6&quot; = &quot;SP8_Spg_6_BA&quot;)
+
+data_follow_eq_5d &lt;- dplyr::rename(data_follow_eq_5d, &quot;eq_5d_1&quot; = &quot;SP8_Spg_1_FU&quot;
+              , &quot;eq_5d_2&quot; = &quot;SP8_Spg_2_FU&quot;
+              , &quot;eq_5d_3&quot; = &quot;SP8_Spg_3_FU&quot;
+              , &quot;eq_5d_4&quot; = &quot;SP8_Spg_4_FU&quot;
+              , &quot;eq_5d_5&quot; = &quot;SP8_Spg_5_FU&quot;
+              , &quot;eq_5d_6&quot; = &quot;SP8_Spg_6_FU&quot;)</code></pre>
 </div>
 <div id="svndagbog" class="section level2">
 <h2>9. Søvndagbog</h2>
@@ -1906,9 +1920,9 @@ data_base &lt;- left_join(data_base, tmp_base)</code></pre>
 ## [31] &quot;BRAF_total&quot;        &quot;fys_akt&quot;           &quot;CES_D_total&quot;      
 ## [34] &quot;haq1&quot;              &quot;haq2&quot;              &quot;haq3&quot;             
 ## [37] &quot;haq4&quot;              &quot;haq5&quot;              &quot;haq6&quot;             
-## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;SP8_Spg_1_BA&quot;     
-## [43] &quot;SP8_Spg_2_BA&quot;      &quot;SP8_Spg_3_BA&quot;      &quot;SP8_Spg_4_BA&quot;     
-## [46] &quot;SP8_Spg_5_BA&quot;      &quot;SP8_Spg_6_BA&quot;      &quot;TST&quot;              
+## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;eq_5d_1&quot;          
+## [43] &quot;eq_5d_2&quot;           &quot;eq_5d_3&quot;           &quot;eq_5d_4&quot;          
+## [46] &quot;eq_5d_5&quot;           &quot;eq_5d_6&quot;           &quot;TST&quot;              
 ## [49] &quot;Bedtime&quot;           &quot;sleep_effi&quot;        &quot;SO&quot;               
 ## [52] &quot;sleep_latency&quot;     &quot;REM_latency&quot;       &quot;WASO&quot;             
 ## [55] &quot;Arous&quot;             &quot;wake_time&quot;         &quot;N1&quot;               
@@ -1954,7 +1968,7 @@ data_follow &lt;- left_join(data_follow, tmp_follow)</code></pre>
 <p>Be careful to rename questions from EQ-5D from BA and FU to common name. <strong>Not done yet</strong>.</p>
 <pre class="r"><code>data_full &lt;- bind_rows(data_base, data_follow)
 dim(data_full)</code></pre>
-<pre><code>## [1] 76 79</code></pre>
+<pre><code>## [1] 76 73</code></pre>
 <pre class="r"><code>names(data_full)</code></pre>
 <pre><code>##  [1] &quot;ID_NUM&quot;            &quot;Sex&quot;               &quot;Age&quot;              
 ##  [4] &quot;Swol_joi&quot;          &quot;Tend_joi&quot;          &quot;DAS&quot;              
@@ -1969,9 +1983,9 @@ dim(data_full)</code></pre>
 ## [31] &quot;BRAF_total&quot;        &quot;fys_akt&quot;           &quot;CES_D_total&quot;      
 ## [34] &quot;haq1&quot;              &quot;haq2&quot;              &quot;haq3&quot;             
 ## [37] &quot;haq4&quot;              &quot;haq5&quot;              &quot;haq6&quot;             
-## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;SP8_Spg_1_BA&quot;     
-## [43] &quot;SP8_Spg_2_BA&quot;      &quot;SP8_Spg_3_BA&quot;      &quot;SP8_Spg_4_BA&quot;     
-## [46] &quot;SP8_Spg_5_BA&quot;      &quot;SP8_Spg_6_BA&quot;      &quot;TST&quot;              
+## [40] &quot;haq7&quot;              &quot;haq_total&quot;         &quot;eq_5d_1&quot;          
+## [43] &quot;eq_5d_2&quot;           &quot;eq_5d_3&quot;           &quot;eq_5d_4&quot;          
+## [46] &quot;eq_5d_5&quot;           &quot;eq_5d_6&quot;           &quot;TST&quot;              
 ## [49] &quot;Bedtime&quot;           &quot;sleep_effi&quot;        &quot;SO&quot;               
 ## [52] &quot;sleep_latency&quot;     &quot;REM_latency&quot;       &quot;WASO&quot;             
 ## [55] &quot;Arous&quot;             &quot;wake_time&quot;         &quot;N1&quot;               
@@ -1980,9 +1994,7 @@ dim(data_full)</code></pre>
 ## [64] &quot;OSA&quot;               &quot;Mix_apnea&quot;         &quot;Cen_apnea&quot;        
 ## [67] &quot;Hyp_nea&quot;           &quot;Desat&quot;             &quot;TST_num&quot;          
 ## [70] &quot;SO_num&quot;            &quot;sleep_latency_num&quot; &quot;REM_latency_num&quot;  
-## [73] &quot;wake_time_num&quot;     &quot;SP8_Spg_1_FU&quot;      &quot;SP8_Spg_2_FU&quot;     
-## [76] &quot;SP8_Spg_3_FU&quot;      &quot;SP8_Spg_4_FU&quot;      &quot;SP8_Spg_5_FU&quot;     
-## [79] &quot;SP8_Spg_6_FU&quot;</code></pre>
+## [73] &quot;wake_time_num&quot;</code></pre>
 <pre class="r"><code>data_full &lt;- left_join(data_full, data_rand_list)</code></pre>
 <pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
 </div>

@@ -12,7 +12,8 @@
 
 num_vars <- c("sleep_effi", "SO_num", "sleep_latency_num", "wake_time_num", "TST_num", "REM_latency_num",
               "WASO", "Arous", "N1", "N2", "N3"
-              , paste("psqi", 1:7, sep = ""), "psqi_total", "ess_total")
+              , paste("psqi", 1:7, sep = ""), "psqi_total", "ess_total"
+              , paste("eq_5d_", 1:6, sep = ""), "haq_total", "CES_D_total")
 file_names <- paste(num_vars,".html", sep = "")
 
 # knit with variable name as parameter

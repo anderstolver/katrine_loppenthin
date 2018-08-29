@@ -160,7 +160,7 @@ $(document).ready(function () {
 <li><a href="#model-based-estimates">Model based estimates</a></li>
 <li><a href="#source-code">Source Code</a></li>
 </ul></li>
-<li><a href="#results-for-variable-arous">Results for variable Arous</a><ul>
+<li><a href="#results-for-variable-eq_5d_4">Results for variable eq_5d_4</a><ul>
 <li><a href="#raw-data">Raw data</a></li>
 <li><a href="#model-based">Model based</a></li>
 </ul></li>
@@ -203,14 +203,14 @@ $(document).ready(function () {
 <h2>Source Code</h2>
 </div>
 </div>
-<div id="results-for-variable-arous" class="section level1">
-<h1>Results for variable Arous</h1>
-<p>Here given for variable: Arous</p>
+<div id="results-for-variable-eq_5d_4" class="section level1">
+<h1>Results for variable eq_5d_4</h1>
+<p>Here given for variable: eq_5d_4</p>
 <div id="raw-data" class="section level3">
 <h3>Raw data</h3>
 <pre class="r"><code>DT::datatable(bind_rows(print_num(params$var_name), print_num_diff(params$var_name)))</code></pre>
-<div id="htmlwidget-7bb30b79e9887b56f5b3" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-7bb30b79e9887b56f5b3">{"x":{"filter":"none","data":[["1","2","3","4","5","6"],["baseline","baseline","follow_up","follow_up","change","change"],["control","intervention","control","intervention","control","intervention"],[18,15,17,15,17,15],[129.1111,195.6,115.9412,194.4,-12.5294,-1.2],[43.6899,85.151,37.4207,81.0051,33.7604,46.5529],[119.5,161,111,177,-17,8],[108.25,141,100,145.5,-28,-24],[142.25,223.5,126,234.5,-2,34]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>time<\/th>\n      <th>Randomisering<\/th>\n      <th>n<\/th>\n      <th>mean<\/th>\n      <th>sd<\/th>\n      <th>median<\/th>\n      <th>q25<\/th>\n      <th>q75<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-a56b171bd41bdf49d74c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a56b171bd41bdf49d74c">{"x":{"filter":"none","data":[["1","2","3","4","5","6"],["baseline","baseline","follow_up","follow_up","change","change"],["control","intervention","control","intervention","control","intervention"],[21,16,18,16,18,16],[2.0476,2.25,2.2222,2.0625,0.1111,-0.1875],[0.669,0.6831,0.7321,0.6801,0.6764,0.6551],[2,2,2,2,0,0],[2,2,2,2,0,-1],[2,3,3,2.25,0.75,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>time<\/th>\n      <th>Randomisering<\/th>\n      <th>n<\/th>\n      <th>mean<\/th>\n      <th>sd<\/th>\n      <th>median<\/th>\n      <th>q25<\/th>\n      <th>q75<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="model-based" class="section level3">
 <h3>Model based</h3>
@@ -237,8 +237,8 @@ tmp_tab &lt;- as_tibble(rbind(tmp_table3, tmp_table2, tmp_table1))
 tmp_tab &lt;- mutate(tmp_tab, contrast = c(&quot;control_base&quot;, &quot;control_follow&quot;, &quot;intervention_base&quot;, &quot;intervention_follow&quot;, &quot;control_change&quot;, &quot;intervention_change&quot;, &quot;group_diff_change&quot;))[c(6, 1:5)]
 
 DT::datatable(tmp_tab)</code></pre>
-<div id="htmlwidget-a5e8683f553049b0d3d3" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a5e8683f553049b0d3d3">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7"],["control_base","control_follow","intervention_base","intervention_follow","control_change","intervention_change","group_diff_change"],[129.1111,116.4534,195.6,194.4,-12.6577,-1.2,11.4577],[14.96,15.1178,16.3879,16.3879,9.7166,10.373,14.2131],[98.5145,85.534,162.0831,160.8831,-32.4749,-22.356,-17.5694],[159.7077,147.3727,229.1169,227.9169,7.1595,19.956,40.4848],[0,0,0,0,0.2023,0.9086,0.4265]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>contrast<\/th>\n      <th>Value<\/th>\n      <th>Std.Error<\/th>\n      <th>lower<\/th>\n      <th>upper<\/th>\n      <th>p-value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-8d1d7f6ec3c8afac7da4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8d1d7f6ec3c8afac7da4">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7"],["control_base","control_follow","intervention_base","intervention_follow","control_change","intervention_change","group_diff_change"],[2.0476,2.1882,2.25,2.0625,0.1406,-0.1875,-0.3281],[0.1506,0.1593,0.1726,0.1726,0.1542,0.1663,0.2268],[1.7404,1.8632,1.898,1.7105,-0.1731,-0.5258,-0.79],[2.3548,2.5132,2.602,2.4145,0.4543,0.1508,0.1338],[0,0,0,0,0.3684,0.2677,0.1577]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>contrast<\/th>\n      <th>Value<\/th>\n      <th>Std.Error<\/th>\n      <th>lower<\/th>\n      <th>upper<\/th>\n      <th>p-value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
