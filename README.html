@@ -11,7 +11,6 @@
 
 <meta name="author" content="Anders Tolver" />
 
-<meta name="date" content="2018-06-14" />
 
 <title>Kathrine Bjerre Løppenthin - søvnprojekt</title>
 
@@ -124,16 +123,16 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Kathrine Bjerre Løppenthin - søvnprojekt</h1>
 <h4 class="author"><em>Anders Tolver</em></h4>
-<h4 class="date"><em>14 Jun 2018</em></h4>
 
 </div>
 
 
-<p>Denne fil giver overblik over arbejdet med Kathrine Bjerre Løppenthins søvnprojekt.</p>
+<div id="indlsning-og-oprensning-af-data" class="section level1">
+<h1>Indlæsning og oprensning af data</h1>
 <ul>
-<li><p><a href="Log.md">Log-fil over hele projektet</a> : indeholder (egne) mødereferater samt timeregnskab</p></li>
-<li><p><a href="R/import_data.md">Read in and tidy up data</a>: indlæser og renser data - gemmer pæne datasæt der benyttes ved statistiske analyser</p></li>
+<li><a href="R/import_data.md">Read in and tidy up data</a>: indlæser og renser data - gemmer pæne datasæt der benyttes ved statistiske analyser</li>
 </ul>
+</div>
 <div id="analyseresultater-numeriske-variable" class="section level1">
 <h1>Analyseresultater (numeriske variable)</h1>
 <ul>
@@ -183,14 +182,29 @@ $(document).ready(function () {
 </div>
 <div id="om-arbejdsprocessen-henvendt-til-anders" class="section level1">
 <h1>Om arbejdsprocessen (henvendt til Anders)</h1>
+<p>Denne fil giver overblik over arbejdet med Kathrine Bjerre Løppenthins søvnprojekt.</p>
+<ul>
+<li><a href="Log.md">Log-fil over hele projektet</a> : indeholder (egne) mødereferater samt timeregnskab</li>
+</ul>
 <p>Denne fil (<code>readme.rmd</code>) opdateres med links til dokumenter, der indeholder output fra statistiske analyser.</p>
 <p>Vær særlig opmærksom på at <em>committe</em> ændringer i følgende filer</p>
 <ul>
-<li><code>readme.rmd</code>, <code>readme.md</code></li>
-<li><code>read_data.rmd</code>, <code>read_data.rmd</code></li>
-<li>væsentlige ændringer i dokumenter der indeholder analyseresultater</li>
-<li></li>
+<li><code>README</code></li>
+<li><code>import_data</code></li>
+<li><code>data</code> (ikke nødvendigt)</li>
+<li>master filer i folder der laver output hvilket pt drejer sig om
+<ul>
+<li><code>summaries.Rmd</code>: for numeriske output variable</li>
+<li><code>tables.Rmd</code>: for diskrete/ordinale output variable</li>
+<li><code>create_files.R</code>: source code til at generere resultaterne ud fra <code>summaries.Rmd</code> og <code>tables.Rmd</code></li>
+</ul></li>
+<li>alle resultater som indholder output
+<ul>
+<li><code>.html</code>-filer i R folderen</li>
+<li>NB: husk at opdatere med links fra denne file (<code>README.rmd</code>)</li>
+</ul></li>
 </ul>
+<p>Jeg foreslår, at <code>.html</code>-filer oploades, og at der benyttes lokale links til at linke mellem filerne. Disse vises dog ikke pænt i github (repo: <code>anderstolver/kathrine_loppenthin</code>). Ved at gøre dette directory <code>public</code> kan siderne dog vises via <code>rawgit.com/anderstolver/kathrine_loppenthin/master/README.html</code></p>
 </div>
 
 
