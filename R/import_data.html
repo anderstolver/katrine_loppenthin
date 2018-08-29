@@ -158,7 +158,10 @@ $(document).ready(function () {
 <li><a href="#follow-up-1">Follow up</a></li>
 </ul></li>
 <li><a href="#anamnese-baseline-follow-up">1. Anamnese (Baseline + follow up)</a></li>
-<li><a href="#svndagbog-baseline-follow-up">Søvndagbog (Baseline + follow up)</a></li>
+<li><a href="#svndagbog-baseline-follow-up">Søvndagbog (Baseline + follow up)</a><ul>
+<li><a href="#baseline-1">Baseline</a></li>
+<li><a href="#follow-up-2">Follow up</a></li>
+</ul></li>
 <li><a href="#watt-max-test">Watt max test</a></li>
 </ul></li>
 <li><a href="#construction-of-new-variables">Construction of new variables</a><ul>
@@ -221,15 +224,15 @@ $(document).ready(function () {
 <h1>Read in data</h1>
 <p>Kathrine Bjerre Løppenthin provided the following data files for the project</p>
 <pre class="r"><code>list.files(path = &quot;../data&quot;)</code></pre>
-<pre><code>##  [1] &quot;Anamnese_baseline_followup.xls&quot;       
-##  [2] &quot;Baseline PSG data NY.xlsx&quot;            
-##  [3] &quot;Baseline data.xls&quot;                    
-##  [4] &quot;Follow-up PSG data.xlsx&quot;              
-##  [5] &quot;Follow-up data.xls&quot;                   
-##  [6] &quot;Intervention og kontrol.xlsx&quot;         
-##  [7] &quot;Kopi af Indtast s\303\270vndagbog.xls&quot;
-##  [8] &quot;Variabeloversigt JR-Sleep.doc&quot;        
-##  [9] &quot;data_full.txt&quot;                        
+<pre><code>##  [1] &quot;Anamnese_baseline_followup.xls&quot;      
+##  [2] &quot;Baseline PSG data NY.xlsx&quot;           
+##  [3] &quot;Baseline data.xls&quot;                   
+##  [4] &quot;Follow-up PSG data.xlsx&quot;             
+##  [5] &quot;Follow-up data.xls&quot;                  
+##  [6] &quot;Intervention og kontrol.xlsx&quot;        
+##  [7] &quot;Kopi af Indtast sovndagbog.xls&quot;      
+##  [8] &quot;Variabeloversigt JR-Sleep.doc&quot;       
+##  [9] &quot;data_full.txt&quot;                       
 ## [10] &quot;watt-max test_baseline_follow-up.xls&quot;</code></pre>
 <p>Reply to email on July 1st, 2018: data files on Polysomnography are still missing and will be provided after summer holiday. Data received from KBL on USB stick August 2nd, 2018 at KB.</p>
 <div id="randomisation-list" class="section level2">
@@ -371,10 +374,72 @@ names(data_base_anamnese)</code></pre>
 </div>
 <div id="svndagbog-baseline-follow-up" class="section level2">
 <h2>Søvndagbog (Baseline + follow up)</h2>
-<p><strong>Where to find data?</strong></p>
 <p>Excel sheet labelled <code>Søvndagbog</code> fra files <code>Baseline data.xls</code> and <code>Follow-up data.xls</code> does not contain any data.</p>
-<p>Not obvious that variables of file <code>Kopi af Indtast søvndagbog.xls</code> correspond to variables listed in <code>Variabeloversigt JR-Sleep.doc</code> for <code>Polysomnografi</code>.</p>
-<p><strong>Need to read in and tidy up data from Søvndagbøger</strong></p>
+<p>Data are in file <code>Kopi af Indtast sovndagbog.xls</code>. (AT has changed file name not to contain “ø”)</p>
+<div id="baseline-1" class="section level3">
+<h3>Baseline</h3>
+<pre class="r"><code>data_base_sovn &lt;- read_excel(path  = &quot;../data/Kopi af Indtast sovndagbog.xls&quot;, sheet = 1, na = &quot;.&quot;, skip = 2)</code></pre>
+<p>Data consists of 7 data lines (one per day for a week) for each of the 38 subjects. Subjects separated by empty data lines.</p>
+<p>Remove empty lines</p>
+<pre class="r"><code>data_base_sovn &lt;- data_base_sovn[-seq(8, 8*37, by = 8), ]</code></pre>
+<p>Repeat identification (<code>ID_NUM</code>) number for all rows per subject</p>
+<pre class="r"><code>data_base_sovn$ID_NUM &lt;- rep(data_base_sovn$ID_NUM[seq(1, 7*37 + 1, by = 7)], each = 7)</code></pre>
+<p>Rename variable keeping track of week day</p>
+<pre class="r"><code>names(data_base_sovn)[2] &lt;- &quot;dag&quot;
+names(data_base_sovn)[16] &lt;- &quot;dag&quot;</code></pre>
+<p>Bind rows corresponding to week1 and week2</p>
+<pre class="r"><code>data_base_sovn1 &lt;- data_base_sovn[, 1:12]
+names(data_base_sovn1)[3:12] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
+data_base_sovn1$week &lt;- &quot;2&quot;
+
+data_base_sovn2 &lt;- data_base_sovn[, 16:26]
+names(data_base_sovn2)[2:11] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
+data_base_sovn2$ID_NUM &lt;- data_base_sovn1$ID_NUM
+data_base_sovn2$week &lt;- &quot;2&quot;
+
+data_base_sovn &lt;- bind_rows(data_base_sovn1, data_base_sovn2)</code></pre>
+</div>
+<div id="follow-up-2" class="section level3">
+<h3>Follow up</h3>
+<pre class="r"><code>data_follow_sovn &lt;- read_excel(path  = &quot;../data/Kopi af Indtast sovndagbog.xls&quot;, sheet = 2, na = &quot;.&quot;, skip = 2)</code></pre>
+<p>Data consists of 7 data lines (one per day for a week) for each of the 38 subjects. Subjects separated by empty data lines.</p>
+<p>Remove empty lines</p>
+<pre class="r"><code>data_follow_sovn &lt;- data_follow_sovn[-seq(8, 8*37, by = 8), ]</code></pre>
+<p>Repeat identification (<code>ID_NUM</code>) number for all rows per subject</p>
+<pre class="r"><code>data_follow_sovn$ID_NUM &lt;- rep(data_follow_sovn$ID_NUM[seq(1, 7*37 + 1, by = 7)], each = 7)</code></pre>
+<p>Rename variable keeping track of week day</p>
+<pre class="r"><code>names(data_follow_sovn)[2] &lt;- &quot;dag&quot;
+names(data_follow_sovn)[16] &lt;- &quot;dag&quot;</code></pre>
+<p>Bind rows corresponding to week1 and week2</p>
+<pre class="r"><code>data_follow_sovn1 &lt;- data_follow_sovn[, 1:12]
+names(data_follow_sovn1)[3:12] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
+data_follow_sovn1$week &lt;- &quot;2&quot;
+
+data_follow_sovn2 &lt;- data_follow_sovn[, 16:26]
+names(data_follow_sovn2)[2:11] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
+data_follow_sovn2$ID_NUM &lt;- data_follow_sovn1$ID_NUM
+data_follow_sovn2$week &lt;- &quot;2&quot;</code></pre>
+<p>May not combine the two data sets because the type of <code>Sp9_spg_1</code> differ. Change <code>IKKE UDFYLDT</code> to <code>NA</code>.</p>
+<pre class="r"><code>data_follow_sovn2$Sp9_spg_1 &lt;- parse_integer(with(data_follow_sovn2, replace(Sp9_spg_1, Sp9_spg_1 == &quot;IKKE UDFYLDT&quot;, NA)))
+
+data_follow_sovn &lt;- bind_rows(data_follow_sovn1, data_follow_sovn2)
+data_follow_sovn</code></pre>
+<pre><code>## # A tibble: 532 x 13
+##    ID_NUM dag   Sp9_spg_1 Sp9_spg_2 Sp9_spg_3 Sp9_spg_4 Sp9_spg_5 Sp9_spg_6
+##    &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+##  1 01-18~ Mand~         1 0         nej       23.30 og~ femten            2
+##  2 01-18~ Tirs~         3 0         nej       00.00 og~ fem               1
+##  3 01-18~ Onsd~         4 0         nej       22.30 og~ fem               1
+##  4 01-18~ Tors~         3 0         nej       00.00 og~ fem               1
+##  5 01-18~ Fred~         2 0         nej       22.30 og~ fem               2
+##  6 01-18~ &quot;L\u~         2 0         nej       23.30 og~ fem               2
+##  7 01-18~ &quot;S\u~         3 0         nej       22.30 og~ fem               2
+##  8 02-21~ Mand~         3 nej       nej       00.00     ti                2
+##  9 02-21~ Tirs~         2 nej       nej       23.00     tredive           2
+## 10 02-21~ Onsd~         2 nej       nej       22.30     ti                2
+## # ... with 522 more rows, and 5 more variables: Sp9_spg_7 &lt;dbl&gt;,
+## #   Sp9_spg_8 &lt;chr&gt;, Sp9_spg_9 &lt;chr&gt;, Sp9_spg_10 &lt;dbl&gt;, week &lt;chr&gt;</code></pre>
+</div>
 </div>
 <div id="watt-max-test" class="section level2">
 <h2>Watt max test</h2>
@@ -557,13 +622,12 @@ data_watt0 &lt;- left_join(data_watt_ilt, data_watt_kondi)</code></pre>
 <div id="question-1" class="section level4">
 <h4>Question 1</h4>
 <p>Change 24:00 to 00:00 and correct some obvious errors</p>
-<pre class="r"><code>data_base_psqi$SP2_Spg_1_BA &lt;- with(data_base_psqi, replace(SP2_Spg_1_BA, SP2_Spg_1_BA == &quot;24.00&quot;, &quot;00.00&quot;))
-data_base_psqi$SP2_Spg_1_BA</code></pre>
-<pre><code>##  [1] &quot;23.30&quot; &quot;23.00&quot; &quot;00.00&quot; &quot;23.45&quot; &quot;00.00&quot; &quot;23.00&quot; &quot;00.00&quot; &quot;22.30&quot;
+<pre class="r"><code>data_base_psqi$SP2_Spg_1_BA</code></pre>
+<pre><code>##  [1] &quot;23.30&quot; &quot;23.00&quot; &quot;24.00&quot; &quot;23.45&quot; &quot;24.00&quot; &quot;23.00&quot; &quot;24.00&quot; &quot;22.30&quot;
 ##  [9] &quot;22.30&quot; &quot;23.00&quot; &quot;22.30&quot; &quot;22.00&quot; &quot;21.30&quot; &quot;23.00&quot; &quot;23.30&quot; &quot;23.30&quot;
 ## [17] &quot;23.00&quot; &quot;23.30&quot; &quot;23.15&quot; &quot;01.00&quot; &quot;23.30&quot; &quot;22.30&quot; &quot;23.30&quot; &quot;22.30&quot;
-## [25] &quot;00.00&quot; &quot;22.30&quot; &quot;02.00&quot; &quot;22.00&quot; &quot;01.30&quot; &quot;22.00&quot; &quot;22.15&quot; &quot;23.00&quot;
-## [33] &quot;01.00&quot; &quot;00.00&quot; &quot;21.00&quot; &quot;22.30&quot; &quot;22.30&quot; &quot;00.00&quot;</code></pre>
+## [25] &quot;24.00&quot; &quot;22.30&quot; &quot;02.00&quot; &quot;22.00&quot; &quot;01.30&quot; &quot;22.00&quot; &quot;22.15&quot; &quot;23.00&quot;
+## [33] &quot;01.00&quot; &quot;24.00&quot; &quot;21.00&quot; &quot;22.30&quot; &quot;22.30&quot; &quot;24.00&quot;</code></pre>
 <p>Grundet inkonsistent brug af <code>.</code> eller <code>:</code> har der indsneget sig nogle fejl i indlæsning af data som rettes her (se Excel-ark)</p>
 <pre class="r"><code>data_follow_psqi$SP2_Spg_1_FU &lt;- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == &quot;23&quot;, &quot;23.00&quot;))
 data_follow_psqi$SP2_Spg_1_FU &lt;- with(data_follow_psqi, replace(SP2_Spg_1_FU, SP2_Spg_1_FU == &quot;0.875&quot;, &quot;21.00&quot;))
@@ -607,13 +671,27 @@ data_follow_psqi$SP2_Spg_3_FU</code></pre>
 </div>
 <div id="change-time-format-of-questions-13" class="section level4">
 <h4>Change time format of questions 1,3</h4>
-<pre class="r"><code>data_base_psqi &lt;- mutate(data_base_psqi, SP2_Spg_1_time_BA = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_1_BA), format = &quot;%H:%M&quot;), SP2_Spg_3_time_BA = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_3_BA), format = &quot;%H:%M&quot;), psqi4_in_bed = SP2_Spg_3_time_BA - SP2_Spg_1_time_BA )
-data_base_psqi$psqi4_in_bed</code></pre>
+<pre class="r"><code>data_base_psqi &lt;- mutate(data_base_psqi, SP2_Spg_1_time_BA = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_1_BA), format = &quot;%H:%M&quot;), SP2_Spg_3_time_BA = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_3_BA), format = &quot;%H:%M&quot;), psqi4_in_bed = SP2_Spg_3_time_BA - SP2_Spg_1_time_BA )</code></pre>
+<pre><code>## Warning: 6 parsing failures.
+## row # A tibble: 5 x 4 col     row   col expected   actual expected   &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;  actual 1     3    NA valid date 24:00  row 2     5    NA valid date 24:00  col 3     7    NA valid date 24:00  expected 4    25    NA valid date 24:00  actual 5    34    NA valid date 24:00 
+## ... ................. ... ............................... ........ ............................... ...... ............................... ... ............................... ... ............................... ........ ............................... ...... ...............................
+## See problems(...) for more details.</code></pre>
+<pre class="r"><code>data_base_psqi$psqi4_in_bed</code></pre>
 <pre><code>## Time differences in secs
-##  [1] -59400 -52200  25200 -57600  27000 -60300  22500 -55800 -58500 -55800
+##  [1] -59400 -52200     NA -57600     NA -60300     NA -55800 -58500 -55800
 ## [11] -55800 -46800 -54000 -59400 -55800 -59700 -61200 -57600 -57600  25200
-## [21] -55800 -57600 -57600 -54000  25200 -54900  12600 -56700  28800 -57600
-## [31] -57900 -57600  21600  28800 -55800 -57600 -55800  23400</code></pre>
+## [21] -55800 -57600 -57600 -54000     NA -54900  12600 -56700  28800 -57600
+## [31] -57900 -57600  21600     NA -55800 -57600 -55800     NA
+## attr(,&quot;problems&quot;)
+## # A tibble: 6 x 4
+##     row   col expected   actual
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; 
+## 1     3    NA valid date 24:00 
+## 2     5    NA valid date 24:00 
+## 3     7    NA valid date 24:00 
+## 4    25    NA valid date 24:00 
+## 5    34    NA valid date 24:00 
+## 6    38    NA valid date 24:00</code></pre>
 <pre class="r"><code>data_follow_psqi &lt;- mutate(data_follow_psqi, SP2_Spg_1_time_FU = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_1_FU), format = &quot;%H:%M&quot;), SP2_Spg_3_time_FU = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, SP2_Spg_3_FU), format = &quot;%H:%M&quot;), psqi4_in_bed = SP2_Spg_3_time_FU - SP2_Spg_1_time_FU )
 data_follow_psqi$psqi4_in_bed</code></pre>
 <pre><code>## Time differences in secs
@@ -667,7 +745,7 @@ table(data_base_psqi$psqi3, data_base_psqi$SP2_Spg_4_BA )</code></pre>
 
 summary(data_base_psqi$psqi4_sleep_eff)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-##   22.22   69.47   80.90   76.36   85.71  100.00       1</code></pre>
+##   22.22   64.32   77.50   75.03   85.71  100.00       6</code></pre>
 </div>
 <div id="component-5-sleep-disturbances" class="section level3">
 <h3>Component 5: Sleep disturbances</h3>
@@ -1920,6 +1998,17 @@ data_follow_eq_5d &lt;- dplyr::rename(data_follow_eq_5d, &quot;eq_5d_1&quot; = &
 </div>
 <div id="svndagbog" class="section level2">
 <h2>9. Søvndagbog</h2>
+<p><strong>The following is missing</strong></p>
+<p>Take average over all days in week 1+2 for</p>
+<ul>
+<li>sp1: plain average</li>
+<li>clear up encoding of sp2</li>
+<li>sp3: should be binary with nej = 0 and every other = 1</li>
+<li>sp6: count plain average</li>
+<li>sp5, 7: time duration</li>
+<li>sp9, 8, 4: does not make sense to do stats</li>
+<li>sp10: plain average</li>
+</ul>
 </div>
 </div>
 <div id="export-cleaned-data" class="section level1">
