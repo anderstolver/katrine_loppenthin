@@ -201,15 +201,6 @@ $(document).ready(function () {
 </div>
 <div id="source-code" class="section level2">
 <h2>Source Code</h2>
-<pre class="r"><code>sum_na &lt;- function(x){sum(!is.na(x))}
-my_funs &lt;- funs(n = sum_na, mean = round(mean(., na.rm = T), digits = 4), sd = round(sd(., na.rm = T), digits = 4), median = median(., na.rm = T), q25 = quantile(., probs = 0.25, na.rm = T), q75 = quantile(., probs = 0.75, na.rm = T))
-
-print_num &lt;- function(varname, df = data_full){
-    group_by(df, time, Randomisering) %&gt;% 
-    select(time, Randomisering, varname) %&gt;%
-    summarize_at(.vars = varname, .funs = my_funs) %&gt;%
-    filter(!is.na(Randomisering))
-}</code></pre>
 </div>
 </div>
 <div id="results-for-variable-wake_time_num" class="section level1">
@@ -217,9 +208,9 @@ print_num &lt;- function(varname, df = data_full){
 <p>Here given for variable: wake_time_num</p>
 <div id="raw-data" class="section level3">
 <h3>Raw data</h3>
-<pre class="r"><code>DT::datatable(print_num(params$var_name))</code></pre>
-<div id="htmlwidget-ad6b5dafc2484342b095" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-ad6b5dafc2484342b095">{"x":{"filter":"none","data":[["1","2","3","4"],["baseline","baseline","follow_up","follow_up"],["control","intervention","control","intervention"],[18,15,17,15],[0.4079,0.8339,0.4535,0.675],[0.3194,0.7118,0.3779,0.497],[0.458333333333333,0.541666666666667,0.408333333333333,0.533333333333333],[0.15625,0.270833333333333,0.158333333333333,0.475],[0.489583333333333,1.575,0.583333333333333,0.783333333333333]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>time<\/th>\n      <th>Randomisering<\/th>\n      <th>n<\/th>\n      <th>mean<\/th>\n      <th>sd<\/th>\n      <th>median<\/th>\n      <th>q25<\/th>\n      <th>q75<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>DT::datatable(bind_rows(print_num(params$var_name), print_num_diff(params$var_name)))</code></pre>
+<div id="htmlwidget-2a288b485d71d0dc9b4d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2a288b485d71d0dc9b4d">{"x":{"filter":"none","data":[["1","2","3","4","5","6"],["baseline","baseline","follow_up","follow_up","change","change"],["control","intervention","control","intervention","control","intervention"],[18,15,17,15,17,15],[0.4079,0.8339,0.4535,0.675,0.0603,-0.1589],[0.3194,0.7118,0.3779,0.497,0.2317,0.4039],[0.458333333333333,0.541666666666667,0.408333333333333,0.533333333333333,0.0916666666666663,-0.0166666666666659],[0.15625,0.270833333333333,0.158333333333333,0.475,-0.066666666666667,-0.458333333333334],[0.489583333333333,1.575,0.583333333333333,0.783333333333333,0.158333333333334,0.0916666666666665]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>time<\/th>\n      <th>Randomisering<\/th>\n      <th>n<\/th>\n      <th>mean<\/th>\n      <th>sd<\/th>\n      <th>median<\/th>\n      <th>q25<\/th>\n      <th>q75<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="model-based" class="section level3">
 <h3>Model based</h3>
@@ -246,8 +237,8 @@ tmp_tab &lt;- as_tibble(rbind(tmp_table3, tmp_table2, tmp_table1))
 tmp_tab &lt;- mutate(tmp_tab, contrast = c(&quot;control_base&quot;, &quot;control_follow&quot;, &quot;intervention_base&quot;, &quot;intervention_follow&quot;, &quot;control_change&quot;, &quot;intervention_change&quot;, &quot;group_diff_change&quot;))[c(6, 1:5)]
 
 DT::datatable(tmp_tab)</code></pre>
-<div id="htmlwidget-a4cff2ff049eca0cbe45" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a4cff2ff049eca0cbe45">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7"],["control_base","control_follow","intervention_base","intervention_follow","control_change","intervention_change","group_diff_change"],[0.4079,0.465,0.8339,0.675,0.0571,-0.1589,-0.216],[0.1148,0.1161,0.1257,0.1257,0.0782,0.0835,0.1143],[0.1731,0.2275,0.5767,0.4178,-0.1023,-0.3291,-0.4495],[0.6426,0.7024,1.091,0.9322,0.2165,0.0113,0.0175],[0.0013,0.0004,0,0,0.4705,0.0663,0.0686]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>contrast<\/th>\n      <th>Value<\/th>\n      <th>Std.Error<\/th>\n      <th>lower<\/th>\n      <th>upper<\/th>\n      <th>p-value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e323b4f2716c2b4ca047" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e323b4f2716c2b4ca047">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7"],["control_base","control_follow","intervention_base","intervention_follow","control_change","intervention_change","group_diff_change"],[0.4079,0.465,0.8339,0.675,0.0571,-0.1589,-0.216],[0.1148,0.1161,0.1257,0.1257,0.0782,0.0835,0.1143],[0.1731,0.2275,0.5767,0.4178,-0.1023,-0.3291,-0.4495],[0.6426,0.7024,1.091,0.9322,0.2165,0.0113,0.0175],[0.0013,0.0004,0,0,0.4705,0.0663,0.0686]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>contrast<\/th>\n      <th>Value<\/th>\n      <th>Std.Error<\/th>\n      <th>lower<\/th>\n      <th>upper<\/th>\n      <th>p-value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
