@@ -71,15 +71,6 @@ print_num <- function(varname, df = data_full){
     filter(!is.na(Randomisering))
 }
 
-tmp_data <- select(data_full, ID_NUM, time, Randomisering, psqi_total)
-tmp_data <- spread(tmp_data, key = time, value = psqi_total)
-tmp_data <- mutate(tmp_data, change = follow_up - baseline)
-tmp_data <- group_by(tmp_data, Randomisering) %>%
-  summarise_at(.vars = "change", .funs = my_funs ) %>%
-  filter(!is.na(Randomisering)) %>%
-  mutate(time = c("baseline", "follow_up"))
-tmp_data
-
 print_num_diff <- function(varname, df = data_full){
   select(df, ID_NUM, time, Randomisering, varname) %>%
   spread(key = time, value = varname) %>%
@@ -103,6 +94,14 @@ Here given for variable: `r params$var_name`
 
 ```{r}
 DT::datatable(bind_rows(print_num(params$var_name), print_num_diff(params$var_name)))
+```
+
+Visualization of raw data
+
+```{r}
+select(data_full, time, Randomisering, ID_NUM, y = params$var_name) %>%
+  filter(!is.na(Randomisering)) %>%
+  ggplot() + geom_line(aes(x = time, y = y, color = Randomisering, group = ID_NUM)) + labs(x = "Assessment time", y = params$var_name)
 ```
 
 ### Model based 
@@ -131,5 +130,17 @@ tmp_tab <- as_tibble(rbind(tmp_table3, tmp_table2, tmp_table1))
 tmp_tab <- mutate(tmp_tab, contrast = c("control_base", "control_follow", "intervention_base", "intervention_follow", "control_change", "intervention_change", "group_diff_change"))[c(6, 1:5)]
 
 DT::datatable(tmp_tab)
+```
+
+### Model validation
+
+```{r}
+form0 <- formula(paste(params$var_name, "~ time * Randomisering + ID_NUM"))
+mod_val <- lm(form0, data = data_full)
+plot(predict(mod_val), rstandard(mod_val)
+     , xlab = "Predicted values", ylab = "Standardized residuals")
+abline(h = c(-2, 0, 2))
+qqnorm(rstandard(mod_val))
+abline(0, 1, col = 2, lty = 2)
 ```
 

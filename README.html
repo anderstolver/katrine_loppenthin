@@ -133,8 +133,9 @@ $(document).ready(function () {
 <li><a href="R/import_data.html">Read in and tidy up data</a>: indlæser og renser data - gemmer pæne datasæt der benyttes ved statistiske analyser</li>
 </ul>
 </div>
-<div id="analyseresultater-numeriske-variable" class="section level1">
-<h1>Analyseresultater (numeriske variable)</h1>
+<div id="analyseresultater" class="section level1">
+<h1>Analyseresultater</h1>
+<p>For hvert enkelt variabel er angivet, hvis analysen afviger fra standardanalysen (mixed linear model). Dette er typisk tilfældet for meget diskrete variable (fx. med værdier 0,1,2,3).</p>
 <ul>
 <li>PSG
 <ul>
@@ -143,9 +144,9 @@ $(document).ready(function () {
 <li>Sleep-onset (i timer): <a href="R/SO_num.html">SO</a></li>
 <li>Søvnlatenstid (i timer): <a href="R/sleep_latency_num.html">sleep_latency</a></li>
 <li>REMlatenstid (i timer): <a href="R/REM_latency_num.html">REM_latency</a></li>
-<li>Antal opvågninger: <a href="R/WASO.html">WASO</a></li>
+<li>Antal opvågninger: <a href="R/WASO.html">WASO</a> Efter aftale med KBL fastholdes navnet <code>WASO</code> for denne variabel i overensstemmelse med navngivngen i tilsendte excel-ark (afviger således fra variabeloversigten hvor <code>WASO</code> skulle angive wake time after sleep-onset)</li>
 <li>Antal arousals: <a href="R/Arous.html">Arous</a></li>
-<li>Wake after sleep-onset (i timer): <a href="R/wake_time_num.html">wake_time</a></li>
+<li>Wake time after sleep-onset (i timer): <a href="R/wake_time_num.html">wake_time</a> Efter aftale med KBL fastholdes navnet <code>wake_time</code> for denne variabel i overensstemmelse med navngivningen i tilsendte excel-ark (afviger således fra variabeloversigten)</li>
 <li>Stadie 1 søvn (i %): <a href="R/N1.html">N1</a></li>
 <li>Stadie 2 søvn (i %): <a href="R/N2.html">N2</a></li>
 <li>Stadie 3 søvn (i %): <a href="R/N3.html">N3</a></li>
@@ -169,6 +170,22 @@ $(document).ready(function () {
 <ul>
 <li>Epworth sleepiness scale: <a href="R/ess_total.html">ess_total</a></li>
 </ul></li>
+<li><ol start="4" style="list-style-type: decimal">
+<li>Bristol (BRAF)</li>
+</ol>
+<ul>
+<li>Physical: <a href="R/BRAF_phys.html">BRAF_phys</a></li>
+<li>Living: <a href="R/BRAF_living.html">BRAF_living</a></li>
+<li>Cognitive: <a href="R/BRAF_cog.html">BRAF_cog</a></li>
+<li>Emotional: <a href="R/BRAF_emo.html">BRAF_emo</a></li>
+<li>Total: <a href="R/BRAF_total.html">BRAF_total</a></li>
+</ul></li>
+<li><ol start="5" style="list-style-type: decimal">
+<li>Fysisk aktivitetsniveau</li>
+</ol>
+<ul>
+<li>Fysisk aktivitet: <a href="R/fys_akt.html">fys_akt</a></li>
+</ul></li>
 <li><ol start="6" style="list-style-type: decimal">
 <li>CES-D</li>
 </ol>
@@ -191,15 +208,6 @@ $(document).ready(function () {
 <li>Smerter: <a href="R/eq_5d_4.html">eq_5d_4</a></li>
 <li>Angst/Depression: <a href="R/eq_5d_5.html">eq_5d_5</a></li>
 <li>Dit Helbred: <a href="R/eq_5d_6.html">eq_5d_6</a></li>
-</ul></li>
-</ul>
-</div>
-<div id="analyseresultater-kategoriskeordinale-variable" class="section level1">
-<h1>Analyseresultater (kategoriske/ordinale variable)</h1>
-<ul>
-<li>PSG
-<ul>
-<li>Tabeller</li>
 </ul></li>
 </ul>
 </div>
