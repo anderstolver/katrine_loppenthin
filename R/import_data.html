@@ -249,6 +249,8 @@ data_rand_list &lt;- dplyr::rename(data_rand_list, &quot;ID_NUM&quot; = &quot;ID
 <pre class="r"><code>unique(data_rand_list$Randomisering)</code></pre>
 <pre><code>## [1] control      intervention
 ## Levels: intervention control</code></pre>
+<p><strong>Important:</strong> One <code>ID_NUM</code> is wrong. Change <code>24-271113</code> to <code>24-272213</code></p>
+<pre class="r"><code>data_rand_list[data_rand_list$ID_NUM ==&quot;24-271113&quot;, 1] &lt;- &quot;24-272213&quot;</code></pre>
 </div>
 <div id="psqi-ess-braf-fysakt-ces-dep-fysfunk-eq-5d" class="section level2">
 <h2>PSQI, ESS, BRAF, fysakt, CES-Dep, fysfunk, EQ-5D</h2>
