@@ -218,10 +218,19 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#eq-5d-helbredssprgeskema">8. EQ-5D Helbredsspørgeskema</a></li>
 <li><a href="#svndagbog">9. Søvndagbog</a><ul>
-<li><a href="#omkodning-af-variabel-vedr.-sovemedicin">Omkodning af variabel vedr. sovemedicin</a></li>
-<li><a href="#omkodning-af-variabel-om-sleep_latency-sp9_spm_5">Omkodning af variabel om sleep_latency (Sp9_spm_5)</a></li>
-<li><a href="#omkodning-og-beregning-af-sleep_duration">Omkodning og beregning af sleep_duration</a></li>
-<li><a href="#konstruktion-af-nye-variable-i-svndagbger">Konstruktion af nye variable i søvndagbøger</a></li>
+<li><a href="#correct-errors-in-data">Correct errors in data</a></li>
+<li><a href="#omkodning-af-variabel-vedr.-sovemedicin-sp9_spm_3">Omkodning af variabel vedr. sovemedicin (<code>Sp9_spm_3</code>)</a></li>
+<li><a href="#omkodning-af-variabel-om-sleep_latency-sp9_spm_5">Omkodning af variabel om sleep_latency (`Sp9_spm_5)</a></li>
+<li><a href="#omkodning-og-beregning-af-to_bed">Omkodning og beregning af <code>to_bed</code></a></li>
+<li><a href="#omkodning-og-beregning-af-light_off">Omkodning og beregning af <code>light_off</code></a></li>
+<li><a href="#omkodning-og-beregning-af-to_sleep">Omkodning og beregning af <code>to_sleep</code></a></li>
+<li><a href="#omkodning-og-beregning-af-wake_up">Omkodning og beregning af <code>wake_up</code></a></li>
+<li><a href="#omkodning-og-beregning-af-get_up">Omkodning og beregning af <code>get_up</code></a></li>
+<li><a href="#omkodning-og-beregning-af-total_in_bed">Omkodning og beregning af <code>total_in_bed</code></a></li>
+<li><a href="#omkodning-og-beregning-af-total_sleep_time">Omkodning og beregning af <code>total_sleep_time</code></a></li>
+<li><a href="#omkodning-og-beregning-af-total_wake">Omkodning og beregning af <code>total_wake</code></a></li>
+<li><a href="#omkodning-og-beregning-af-sleep_efficiency">Omkodning og beregning af <code>sleep_efficiency</code></a></li>
+<li><a href="#display-problems-in-data">Display problems in data</a></li>
 <li><a href="#aggregering-af-variable">Aggregering af variable</a></li>
 </ul></li>
 </ul></li>
@@ -410,7 +419,7 @@ names(data_base_sovn)[16] &lt;- &quot;dag&quot;</code></pre>
 <p>Bind rows corresponding to week1 and week2</p>
 <pre class="r"><code>data_base_sovn1 &lt;- data_base_sovn[, 1:12]
 names(data_base_sovn1)[3:12] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
-data_base_sovn1$week &lt;- &quot;2&quot;
+data_base_sovn1$week &lt;- &quot;1&quot;
 
 data_base_sovn2 &lt;- data_base_sovn[, 16:26]
 names(data_base_sovn2)[2:11] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
@@ -433,7 +442,7 @@ names(data_follow_sovn)[16] &lt;- &quot;dag&quot;</code></pre>
 <p>Bind rows corresponding to week1 and week2</p>
 <pre class="r"><code>data_follow_sovn1 &lt;- data_follow_sovn[, 1:12]
 names(data_follow_sovn1)[3:12] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
-data_follow_sovn1$week &lt;- &quot;2&quot;
+data_follow_sovn1$week &lt;- &quot;1&quot;
 
 data_follow_sovn2 &lt;- data_follow_sovn[, 16:26]
 names(data_follow_sovn2)[2:11] &lt;- paste(&quot;Sp9_spg_&quot;, 1:10, sep = &quot;&quot;)
@@ -2018,25 +2027,57 @@ data_follow_eq_5d &lt;- dplyr::rename(data_follow_eq_5d, &quot;eq_5d_1&quot; = &
 </div>
 <div id="svndagbog" class="section level2">
 <h2>9. Søvndagbog</h2>
-<p>KBL email from August 30, 2018: how to aggregate data.</p>
-<p>Omkodning af svar på <code>Sp9_spm_3</code> om brug af sovemedicin og alkohol. Afventer svar på hvordan omkodning skal foretages.</p>
+<p>Chekc email korrespondance med KBL omkring 30.-31. August 2018: how to aggregate data.</p>
 <p>Følgende mål benyttes til aggregering af data</p>
 <ul>
-<li>spm. 1 + spm. 10: rene gennemsnit</li>
+<li>spm. 1 + spm. 10: rene gennemsnit (variable på skala 1-5)</li>
 <li>spm. 3: andel af dage med sovemedicin</li>
-<li>spm. 5: rene gennemsnit efter omkodning til numeriske værdier</li>
-<li>spm. 8 - spm. 4: forskel på tidspunkter</li>
+<li>spm. 5: rene gennemsnit efter omkodning til numeriske værdier (sleep_latency)</li>
 </ul>
-<div id="omkodning-af-variabel-vedr.-sovemedicin" class="section level3">
-<h3>Omkodning af variabel vedr. sovemedicin</h3>
+<p>Desuden ønskes udregnet følgende</p>
+<ul>
+<li>total sleep time</li>
+<li>sleep efficientcy</li>
+<li>wake after sleep onset (hvad betyder dette?)</li>
+<li>totale wake time (hvad betyder dette?)</li>
+</ul>
+<p>Hertil konstrueres følgende variable (som tidspunkter)</p>
+<ul>
+<li>to_bed: bedtime udtrukket fra spm. 4</li>
+<li>light_off: tidspunkt hvor lys blev slukket - udtrukket fra spm. 4</li>
+<li>to_sleep: light_off + sleep_latency (spm. 5)</li>
+<li>wake_up: hvornår vågnede du sidste gang (spm. 8)</li>
+<li>get_up: hvornår stod du op (spm. 9)</li>
+<li>total_in_bed: get_up - to_bed</li>
+<li>total_sleep_time: wake_up - to_sleep - “no of minutes awake”</li>
+</ul>
+<div id="correct-errors-in-data" class="section level3">
+<h3>Correct errors in data</h3>
+<p>Disse ændringer er foretaget i overensstemmelse med KBLs ønsker</p>
+<div id="ombytning-af-rkkeflge-af-tidspunkter-i-sp9_spg_4" class="section level4">
+<h4>Ombytning af rækkefølge af tidspunkter i <code>Sp9_spg_4</code></h4>
+<pre class="r"><code>data_base_sovn$Sp9_spg_4[data_base_sovn$ID_NUM == &quot;05-280613&quot; &amp; data_base_sovn$week == 1 &amp; data_base_sovn$dag == &quot;Onsdag&quot;] &lt;- &quot;00.00 og 24.30&quot;
+
+data_base_sovn$Sp9_spg_4[data_base_sovn$ID_NUM == &quot;07-090713&quot; &amp; data_base_sovn$week == 1 &amp; data_base_sovn$dag == &quot;Onsdag&quot;] &lt;- &quot;23.30 og 23.45&quot;
+
+data_base_sovn$Sp9_spg_4[data_base_sovn$ID_NUM == &quot;28-260314&quot; &amp; data_base_sovn$week == 1 &amp; data_base_sovn$dag == &quot;Onsdag&quot;] &lt;- &quot;23.15 og 23.30&quot;
+
+data_base_sovn$Sp9_spg_4[data_base_sovn$ID_NUM == &quot;18-011013&quot; &amp; data_base_sovn$week == 2 &amp; data_base_sovn$dag == &quot;Mandag&quot;] &lt;- &quot;23.30 og 23.45&quot;
+
+data_base_sovn$Sp9_spg_4[data_base_sovn$ID_NUM == &quot;34-021115&quot; &amp; data_base_sovn$week == 2 &amp; data_base_sovn$dag == &quot;Torsdag&quot;] &lt;- &quot;23.00 og 23.30&quot;</code></pre>
+</div>
+</div>
+<div id="omkodning-af-variabel-vedr.-sovemedicin-sp9_spm_3" class="section level3">
+<h3>Omkodning af variabel vedr. sovemedicin (<code>Sp9_spm_3</code>)</h3>
 <p>Check email fra KBL d. 30/8-2018 omkring omkodning.</p>
 <pre class="r"><code>data_base_sovn$sleep_medication &lt;- ifelse(data_base_sovn$Sp9_spg_3 %in% c(&quot;5 mg zolpidem&quot;, &quot;1 baldrian&quot;, &quot;5mg zolpidem&quot;), 1, 0)
 
 data_follow_sovn$sleep_medication &lt;- ifelse(data_follow_sovn$Sp9_spg_3 %in% c(&quot;5 mg zonoct&quot;, &quot;en halv sovetablet&quot;), 1, 0)</code></pre>
 </div>
 <div id="omkodning-af-variabel-om-sleep_latency-sp9_spm_5" class="section level3">
-<h3>Omkodning af variabel om sleep_latency (Sp9_spm_5)</h3>
-<p>For baseline data</p>
+<h3>Omkodning af variabel om sleep_latency (`Sp9_spm_5)</h3>
+<div id="for-baseline-data" class="section level4">
+<h4>For baseline data</h4>
 <pre class="r"><code>data_base_sovn$sovn_sleep_latency &lt;- fct_recode(data_base_sovn$Sp9_spg_5, &quot;5&quot; = &quot;fem&quot;, &quot;2&quot; = &quot;to&quot;
            , &quot;30&quot; = &quot;tredive&quot;, &quot;15&quot; = &quot;femten&quot;, &quot;10&quot; = &quot;ti&quot;
            , &quot;20&quot; = &quot;tyve&quot;, &quot;45&quot; = &quot;femogfyre&quot;, &quot;60&quot; = &quot;tres&quot;
@@ -2052,7 +2093,9 @@ data_follow_sovn$sleep_medication &lt;- ifelse(data_follow_sovn$Sp9_spg_3 %in% c
            , &quot;110&quot; = &quot;ethundredeogti&quot;, &quot;165&quot; = &quot;ethundredefemogtres&quot;
            , &quot;210&quot; = &quot;tohundredeti&quot;)
 data_base_sovn &lt;- mutate(data_base_sovn, sovn_sleep_latency = parse_number(sovn_sleep_latency))</code></pre>
-<p>Follow-up</p>
+</div>
+<div id="follow-up-3" class="section level4">
+<h4>Follow-up</h4>
 <pre class="r"><code>data_follow_sovn$sovn_sleep_latency &lt;- fct_recode(data_follow_sovn$Sp9_spg_5, &quot;5&quot; = &quot;fem&quot;
                   , &quot;15&quot; = &quot;femten&quot;, &quot;10&quot; = &quot;ti&quot;
                   , &quot;30&quot; = &quot;tredive&quot;, &quot;240&quot; = &quot;tohundredeogfyrre&quot;
@@ -2065,35 +2108,13 @@ data_base_sovn &lt;- mutate(data_base_sovn, sovn_sleep_latency = parse_number(so
                   , &quot;0&quot; = &quot;nul&quot;, &quot;105&quot; = &quot;ethundredefem&quot;, &quot;70&quot; = &quot;halvfjers&quot;, &quot;225&quot; = &quot;tohundredefemogtyve&quot;)
 data_follow_sovn &lt;- mutate(data_follow_sovn, sovn_sleep_latency = parse_number(sovn_sleep_latency))</code></pre>
 </div>
-<div id="omkodning-og-beregning-af-sleep_duration" class="section level3">
-<h3>Omkodning og beregning af sleep_duration</h3>
-<ul>
-<li><p>spm. 9: Hvornår stod du op?</p></li>
-<li><p>spm. 8: Hvornår vågnede du uden at sove igen?</p></li>
-<li><p>spm. 4: Hvornår gik du i seng? Hvornår slukkede du lyset?</p></li>
-</ul>
-<p>Change format of <code>Sp9_spm_8</code> to time format.</p>
-<p>Baseline</p>
-<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, wake_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_8), format = &quot;%H:%M&quot;))</code></pre>
-<p>Follow up</p>
-<pre class="r"><code>data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;1&quot;, &quot;01.00&quot;))
-data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;2&quot;, &quot;02.00&quot;))
-data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;3&quot;, &quot;03.00&quot;))
-data_follow_sovn &lt;- mutate(data_follow_sovn, wake_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_8), format = &quot;%H:%M&quot;))</code></pre>
-<p>Replace unvalid entries of <code>Sp9_spm_9</code> to <code>NA</code>.</p>
-<p>Baseline</p>
-<pre class="r"><code>data_base_sovn$Sp9_spg_9 &lt;- with(data_base_sovn, replace(Sp9_spg_9, substr(Sp9_spg_9, 1, 4) == &quot;ikke&quot;, NA))</code></pre>
-<p>Change format of <code>Sp9_spm_8</code> to time format.</p>
-<p>Baseline + follow up</p>
-<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, get_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_9), format = &quot;%H:%M&quot;))
-
-data_follow_sovn &lt;- mutate(data_follow_sovn, get_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_9), format = &quot;%H:%M&quot;))</code></pre>
-<p>Change format of <code>Sp9_spm_4</code> to time format.</p>
-<ul>
-<li>split variable</li>
-<li>correct values</li>
-</ul>
-<p>Baseline data</p>
+</div>
+<div id="omkodning-og-beregning-af-to_bed" class="section level3">
+<h3>Omkodning og beregning af <code>to_bed</code></h3>
+<p>Formatet ændres til <code>time</code>.</p>
+<p>Enkelte oplagte småfejl rettes.</p>
+<div id="baseline-2" class="section level4">
+<h4>Baseline</h4>
 <pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, Sp9_spg_4 = gsub(&quot;-&quot;, &quot; &quot;, Sp9_spg_4))
 
 base_to_bed &lt;- sapply(strsplit(data_base_sovn$Sp9_spg_4, split = c(&quot; &quot;)), first)
@@ -2101,12 +2122,11 @@ base_to_bed &lt;- gsub(&quot;\\.&quot;, &quot;:&quot;, base_to_bed)
 base_to_bed &lt;- gsub(&quot;24.&quot;, &quot;00.&quot;, base_to_bed)
 data_base_sovn$to_bed &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, base_to_bed), format = &quot;%H:%M&quot;)
 
-base_light_off &lt;- sapply(strsplit(data_base_sovn$Sp9_spg_4, split = c(&quot; &quot;)), last)
-base_light_off &lt;- replace(base_light_off, base_light_off == &quot;45&quot;, &quot;21.45&quot;)
-base_light_off &lt;- gsub(&quot;24.&quot;, &quot;00.&quot;, base_light_off)
-
-data_base_sovn$light_off &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, base_light_off), format = &quot;%H:%M&quot;)</code></pre>
-<p>Follow up</p>
+data_base_sovn$to_bed &lt;- ymd_hms(paste(&quot;2018-08-31&quot;,data_base_sovn$to_bed))+days(ifelse(hour(data_base_sovn$to_bed) &lt; 12, 1, 0))</code></pre>
+<pre><code>## Warning: 58 failed to parse.</code></pre>
+</div>
+<div id="follow-up-4" class="section level4">
+<h4>Follow up</h4>
 <pre class="r"><code>data_follow_sovn &lt;- mutate(data_follow_sovn, Sp9_spg_4 = gsub(&quot;sengeliggende&quot;, NA, Sp9_spg_4))
 
 follow_to_bed &lt;- sapply(strsplit(data_follow_sovn$Sp9_spg_4, split = c(&quot; &quot;)), first)
@@ -2114,81 +2134,193 @@ follow_to_bed &lt;- gsub(&quot;00.000&quot;, &quot;00.00&quot;, follow_to_bed)
 follow_to_bed &lt;- gsub(&quot;\\.&quot;, &quot;:&quot;, follow_to_bed)
 data_follow_sovn$to_bed &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, follow_to_bed), format = &quot;%H:%M&quot;)
 
-follow_light_off &lt;- sapply(strsplit(data_follow_sovn$Sp9_spg_4, split = c(&quot; &quot;)), last)
-data_follow_sovn$light_off &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, follow_light_off), format = &quot;%H:%M&quot;)</code></pre>
+data_follow_sovn$to_bed &lt;- ymd_hms(paste(&quot;2018-08-31&quot;,data_follow_sovn$to_bed))+days(ifelse(hour(data_follow_sovn$to_bed) &lt; 12, 1, 0))</code></pre>
+<pre><code>## Warning: 76 failed to parse.</code></pre>
 </div>
-<div id="konstruktion-af-nye-variable-i-svndagbger" class="section level3">
-<h3>Konstruktion af nye variable i søvndagbøger</h3>
-<p>Katrine efterspørger at følgende beregnes ud fra søvndagbøger</p>
-<ul>
-<li>sleep efficiency</li>
-<li>sleep latency</li>
-<li>total sleep time</li>
-<li>wake after sleep onset</li>
-<li>total wake time</li>
-</ul>
-<p>Nedenfor konstrueres først følgende date-time variable</p>
-<ul>
-<li>to_bed</li>
-<li>light_off</li>
-<li>to_sleep</li>
-<li>wake_up</li>
-<li>get_up</li>
-</ul>
-<pre class="r"><code>### to_bed
-#data_base_sovn$to_bed 
-data_base_sovn$to_bed &lt;- ymd_hms(paste(&quot;2018-08-31&quot;,data_base_sovn$to_bed))+days(ifelse(hour(data_base_sovn$to_bed) &lt; 12, 1, 0))</code></pre>
-<pre><code>## Warning: 58 failed to parse.</code></pre>
-<pre class="r"><code>### light_off
+</div>
+<div id="omkodning-og-beregning-af-light_off" class="section level3">
+<h3>Omkodning og beregning af <code>light_off</code></h3>
+<div id="baseline-3" class="section level4">
+<h4>Baseline</h4>
+<pre class="r"><code>base_light_off &lt;- sapply(strsplit(data_base_sovn$Sp9_spg_4, split = c(&quot; &quot;)), last)
+base_light_off &lt;- replace(base_light_off, base_light_off == &quot;45&quot;, &quot;21.45&quot;)
+base_light_off &lt;- gsub(&quot;24.&quot;, &quot;00.&quot;, base_light_off)
+
+data_base_sovn$light_off &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, base_light_off), format = &quot;%H:%M&quot;)
 data_base_sovn$light_off &lt;- ymd_hms(paste(&quot;2018-08-31&quot;, data_base_sovn$light_off)) +days(ifelse(hour(data_base_sovn$light_off) &lt; 12, 1, 0))</code></pre>
 <pre><code>## Warning: 58 failed to parse.</code></pre>
-<pre class="r"><code>### to_sleep
-data_base_sovn$to_sleep &lt;- data_base_sovn$light_off + minutes(data_base_sovn$sovn_sleep_latency)
-### wake_up
+</div>
+<div id="follow-up-5" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>follow_light_off &lt;- sapply(strsplit(data_follow_sovn$Sp9_spg_4, split = c(&quot; &quot;)), last)
+data_follow_sovn$light_off &lt;- parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, follow_light_off), format = &quot;%H:%M&quot;)
+data_follow_sovn$light_off &lt;- ymd_hms(paste(&quot;2018-08-31&quot;, data_follow_sovn$light_off)) +days(ifelse(hour(data_follow_sovn$light_off) &lt; 12, 1, 0))</code></pre>
+<pre><code>## Warning: 76 failed to parse.</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-to_sleep" class="section level3">
+<h3>Omkodning og beregning af <code>to_sleep</code></h3>
+<div id="baseline-4" class="section level4">
+<h4>Baseline</h4>
+<pre class="r"><code>data_base_sovn$to_sleep &lt;- data_base_sovn$light_off + minutes(data_base_sovn$sovn_sleep_latency)</code></pre>
+</div>
+<div id="follow-up-6" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>data_follow_sovn$to_sleep &lt;- data_follow_sovn$light_off + minutes(data_follow_sovn$sovn_sleep_latency)</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-wake_up" class="section level3">
+<h3>Omkodning og beregning af <code>wake_up</code></h3>
+<div id="baseline-5" class="section level4">
+<h4>Baseline</h4>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, wake_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_8), format = &quot;%H:%M&quot;))
 data_base_sovn$wake_up &lt;- ymd_hms(paste(&quot;2018-09-01&quot;, data_base_sovn$wake_up))</code></pre>
 <pre><code>## Warning: 58 failed to parse.</code></pre>
-<pre class="r"><code>### get_up
-data_base_sovn$get_up &lt;- ymd_hms(paste(&quot;2018-09-01&quot;, data_base_sovn$get_up))</code></pre>
+</div>
+<div id="follow-up-7" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;1&quot;, &quot;01.00&quot;))
+data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;2&quot;, &quot;02.00&quot;))
+data_follow_sovn$Sp9_spg_8 &lt;- with(data_follow_sovn, replace(Sp9_spg_8, Sp9_spg_8 == &quot;3&quot;, &quot;03.00&quot;))
+data_follow_sovn &lt;- mutate(data_follow_sovn, wake_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_8), format = &quot;%H:%M&quot;))
+data_follow_sovn$wake_up &lt;- ymd_hms(paste(&quot;2018-09-01&quot;, data_follow_sovn$wake_up))</code></pre>
+<pre><code>## Warning: 73 failed to parse.</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-get_up" class="section level3">
+<h3>Omkodning og beregning af <code>get_up</code></h3>
+<div id="baseline-6" class="section level4">
+<h4>Baseline</h4>
+<p>Replace unvalid entries of <code>Sp9_spm_9</code> to <code>NA</code>.</p>
+<pre class="r"><code>data_base_sovn$Sp9_spg_9 &lt;- with(data_base_sovn, replace(Sp9_spg_9, substr(Sp9_spg_9, 1, 4) == &quot;ikke&quot;, NA))</code></pre>
+<p>Change format of <code>Sp9_spm_9</code> to time format.</p>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, get_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_9), format = &quot;%H:%M&quot;))</code></pre>
+<pre class="r"><code>data_base_sovn$get_up &lt;- ymd_hms(paste(&quot;2018-09-01&quot;, data_base_sovn$get_up))</code></pre>
 <pre><code>## Warning: 58 failed to parse.</code></pre>
-<p>Display data with inconsistent registration of time points:</p>
+</div>
+<div id="follow-up-8" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>data_follow_sovn &lt;- mutate(data_follow_sovn, get_up = parse_time(gsub(&quot;\\.&quot;, &quot;:&quot;, Sp9_spg_9), format = &quot;%H:%M&quot;))</code></pre>
+<pre class="r"><code>data_follow_sovn$get_up &lt;- ymd_hms(paste(&quot;2018-09-01&quot;, data_follow_sovn$get_up))</code></pre>
+<pre><code>## Warning: 84 failed to parse.</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-total_in_bed" class="section level3">
+<h3>Omkodning og beregning af <code>total_in_bed</code></h3>
+<div id="baseline-7" class="section level4">
+<h4>Baseline</h4>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, total_in_bed = get_up - to_bed)</code></pre>
+</div>
+<div id="follow-up-9" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>data_follow_sovn &lt;- mutate(data_follow_sovn, total_in_bed = get_up - to_bed)</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-total_sleep_time" class="section level3">
+<h3>Omkodning og beregning af <code>total_sleep_time</code></h3>
+<p>Ifølge katrine skal antallet af opvågninger ganges med opvågningstiden. Jeg tror dog at opvågningstiden er den totale opvågningstid! ATs synspunkt er fulgt nedenfor.</p>
+<div id="baseline-8" class="section level4">
+<h4>Baseline</h4>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, total_sleep_time = wake_up - (to_sleep + minutes(Sp9_spg_7)))</code></pre>
+</div>
+<div id="follow-up-10" class="section level4">
+<h4>Follow up</h4>
+<pre class="r"><code>data_follow_sovn &lt;- mutate(data_follow_sovn, total_sleep_time = wake_up - (to_sleep + minutes(Sp9_spg_7)))</code></pre>
+</div>
+</div>
+<div id="omkodning-og-beregning-af-total_wake" class="section level3">
+<h3>Omkodning og beregning af <code>total_wake</code></h3>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, total_wake = Sp9_spg_7 + sovn_sleep_latency)
+
+data_follow_sovn &lt;- mutate(data_follow_sovn, total_wake = Sp9_spg_7 + sovn_sleep_latency)</code></pre>
+</div>
+<div id="omkodning-og-beregning-af-sleep_efficiency" class="section level3">
+<h3>Omkodning og beregning af <code>sleep_efficiency</code></h3>
+<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, sovn_sleep_efficiency = as.duration(total_sleep_time)/as.duration(total_in_bed))</code></pre>
+<pre class="r"><code>data_follow_sovn &lt;- mutate(data_follow_sovn, sovn_sleep_efficiency = as.duration(total_sleep_time)/as.duration(total_in_bed))</code></pre>
+</div>
+<div id="display-problems-in-data" class="section level3">
+<h3>Display problems in data</h3>
+<p>Primært for at se, at der med rettelser ovenfor er luget ud i de fleste fejl.</p>
+<div id="baseline-9" class="section level4">
+<h4>Baseline</h4>
+<p>Select only relevant variables from data</p>
+<pre class="r"><code>data_base_sovn &lt;- select(data_base_sovn, ID_NUM, week, dag, to_bed, light_off, sovn_sleep_latency, to_sleep, wake_up, get_up, total_in_bed, total_sleep_time, sovn_sleep_efficiency, total_wake, sleep_medication, contains(&quot;Sp9&quot;))</code></pre>
 <p>To bed and light off reversed</p>
 <pre class="r"><code>DT::datatable(filter(data_base_sovn, to_bed &gt; light_off))</code></pre>
-<div id="htmlwidget-01eb58024d1c2e735121" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-01eb58024d1c2e735121">{"x":{"filter":"none","data":[["1","2","3","4","5"],["05-280613","07-090713","28-260314","18-011013","34-021115"],["Onsdag","Onsdag","Onsdag","Mandag","Torsdag"],[3,3,3,3,3],[null,"17.40-17.55 og 18.15-18.30",null,null,null],[null,null,null,null,null],["24.30 og 00.00","23.45 og 23.30","23.30 og 23.15","23.45 og 23.30","23.30 og 23.00"],["ti","ti","ti","femten","femten"],[2,5,8,2,3],[25,25,16,30,4],["07.00","07.50","06.30","07.30","07.30"],["08.00","07.50","06.33","07.30","07.30"],[2,2,1,3,4],["2","2","2","2","2"],[0,0,0,0,0],[10,10,10,15,15],["2018-09-01T07:00:00Z","2018-09-01T07:50:00Z","2018-09-01T06:30:00Z","2018-09-01T07:30:00Z","2018-09-01T07:30:00Z"],["2018-09-01T08:00:00Z","2018-09-01T07:50:00Z","2018-09-01T06:33:00Z","2018-09-01T07:30:00Z","2018-09-01T07:30:00Z"],["2018-09-01T00:30:00Z","2018-08-31T23:45:00Z","2018-08-31T23:30:00Z","2018-08-31T23:45:00Z","2018-08-31T23:30:00Z"],["2018-09-01T00:00:00Z","2018-08-31T23:30:00Z","2018-08-31T23:15:00Z","2018-08-31T23:30:00Z","2018-08-31T23:00:00Z"],["2018-09-01T00:10:00Z","2018-08-31T23:40:00Z","2018-08-31T23:25:00Z","2018-08-31T23:45:00Z","2018-08-31T23:15:00Z"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>dag<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n      <th>week<\/th>\n      <th>sleep_medication<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>to_sleep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,8,9,12,14,15]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b683ee0b40b7ce4b7ad8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b683ee0b40b7ce4b7ad8">{"x":{"filter":"none","data":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Wake up before sleep time</p>
 <pre class="r"><code>DT::datatable(filter(data_base_sovn, to_sleep &gt; wake_up))</code></pre>
-<div id="htmlwidget-1e597c86106c693336c9" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1e597c86106c693336c9">{"x":{"filter":"none","data":[["1","2"],["10-240713","27-040314"],["Lørdag","Søndag"],[4,3],[null,"11.30-12.30"],[null,null],["01.30 og 02.50","22.15 og 04.00"],["fem","tredive"],[2,1],[25,60],["01.30","04.00"],["07.35","04.50"],[3,2],["2","2"],[0,0],[5,30],["2018-09-01T01:30:00Z","2018-09-01T04:00:00Z"],["2018-09-01T07:35:00Z","2018-09-01T04:50:00Z"],["2018-09-01T01:30:00Z","2018-08-31T22:15:00Z"],["2018-09-01T02:50:00Z","2018-09-01T04:00:00Z"],["2018-09-01T02:55:00Z","2018-09-01T04:30:00Z"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>dag<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n      <th>week<\/th>\n      <th>sleep_medication<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>to_sleep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,8,9,12,14,15]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e837b51fddf5f8c3ba29" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e837b51fddf5f8c3ba29">{"x":{"filter":"none","data":[["1","2"],["10-240713","27-040314"],["2","2"],["Lørdag","Søndag"],["2018-09-01T01:30:00Z","2018-08-31T22:15:00Z"],["2018-09-01T02:50:00Z","2018-09-01T04:00:00Z"],[5,30],["2018-09-01T02:55:00Z","2018-09-01T04:30:00Z"],["2018-09-01T01:30:00Z","2018-09-01T04:00:00Z"],["2018-09-01T07:35:00Z","2018-09-01T04:50:00Z"],[6.08333333333333,6.58333333333333],[-110,-90],[-0.301369863013699,-0.227848101265823],[30,90],[0,0],[4,3],[null,"11.30-12.30"],[null,null],["01.30 og 02.50","22.15 og 04.00"],["fem","tredive"],[2,1],[25,60],["01.30","04.00"],["07.35","04.50"],[3,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Get up before wake up</p>
 <pre class="r"><code>DT::datatable(filter(data_base_sovn, wake_up &gt; get_up))</code></pre>
-<div id="htmlwidget-040468ddfb0f6bca9854" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-040468ddfb0f6bca9854">{"x":{"filter":"none","data":[["1","2"],["11-260813","14-160913"],["Mandag","Tirsdag"],[1,2],[null,"16.15-17.15"],[null,null],["22.45 og 22.45","23.45 og 23.45"],["halvfems","tyve"],[3,4],[80,50],["07.10","07.30"],["07.00","07.00"],[1,3],["2","2"],[0,0],[90,20],["2018-09-01T07:10:00Z","2018-09-01T07:30:00Z"],["2018-09-01T07:00:00Z","2018-09-01T07:00:00Z"],["2018-08-31T22:45:00Z","2018-08-31T23:45:00Z"],["2018-08-31T22:45:00Z","2018-08-31T23:45:00Z"],["2018-09-01T00:15:00Z","2018-09-01T00:05:00Z"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>dag<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n      <th>week<\/th>\n      <th>sleep_medication<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>to_sleep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,8,9,12,14,15]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-<p>Compute sleep_efficiency</p>
-<pre class="r"><code>data_base_sovn &lt;- mutate(data_base_sovn, total_sleep_time = wake_up - to_sleep, total_in_bed = get_up - to_bed, sovn_sleep_efficiency = as.duration(total_sleep_time)/as.duration(total_in_bed))</code></pre>
+<div id="htmlwidget-138f1932c32a665ea35e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-138f1932c32a665ea35e">{"x":{"filter":"none","data":[["1","2"],["11-260813","14-160913"],["1","2"],["Mandag","Tirsdag"],["2018-08-31T22:45:00Z","2018-08-31T23:45:00Z"],["2018-08-31T22:45:00Z","2018-08-31T23:45:00Z"],[90,20],["2018-09-01T00:15:00Z","2018-09-01T00:05:00Z"],["2018-09-01T07:10:00Z","2018-09-01T07:30:00Z"],["2018-09-01T07:00:00Z","2018-09-01T07:00:00Z"],[8.25,7.25],[335,395],[0.676767676767677,0.908045977011494],[170,70],[0,0],[1,2],[null,"16.15-17.15"],[null,null],["22.45 og 22.45","23.45 og 23.45"],["halvfems","tyve"],[3,4],[80,50],["07.10","07.30"],["07.00","07.00"],[1,3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Display data with sleep efficiency outside 0-100 %</p>
 <pre class="r"><code>DT::datatable(filter(data_base_sovn, sovn_sleep_efficiency &gt; 1 | sovn_sleep_efficiency &lt; 0))</code></pre>
-<div id="htmlwidget-543fee46c9e300e5a116" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-543fee46c9e300e5a116">{"x":{"filter":"none","data":[["1","2","3","4","5","6"],["07-090713","28-260314","10-240713","14-160913","27-040314","34-021115"],["Onsdag","Onsdag","Lørdag","Tirsdag","Søndag","Torsdag"],[3,3,4,2,3,3],["17.40-17.55 og 18.15-18.30",null,null,"16.15-17.15","11.30-12.30",null],[null,null,null,null,null,null],["23.45 og 23.30","23.30 og 23.15","01.30 og 02.50","23.45 og 23.45","22.15 og 04.00","23.30 og 23.00"],["ti","ti","fem","tyve","tredive","femten"],[5,8,2,4,1,3],[25,16,25,50,60,4],["07.50","06.30","01.30","07.30","04.00","07.30"],["07.50","06.33","07.35","07.00","04.50","07.30"],[2,1,3,3,2,4],["2","2","2","2","2","2"],[0,0,0,0,0,0],[10,10,5,20,30,15],["2018-09-01T07:50:00Z","2018-09-01T06:30:00Z","2018-09-01T01:30:00Z","2018-09-01T07:30:00Z","2018-09-01T04:00:00Z","2018-09-01T07:30:00Z"],["2018-09-01T07:50:00Z","2018-09-01T06:33:00Z","2018-09-01T07:35:00Z","2018-09-01T07:00:00Z","2018-09-01T04:50:00Z","2018-09-01T07:30:00Z"],["2018-08-31T23:45:00Z","2018-08-31T23:30:00Z","2018-09-01T01:30:00Z","2018-08-31T23:45:00Z","2018-08-31T22:15:00Z","2018-08-31T23:30:00Z"],["2018-08-31T23:30:00Z","2018-08-31T23:15:00Z","2018-09-01T02:50:00Z","2018-08-31T23:45:00Z","2018-09-01T04:00:00Z","2018-08-31T23:00:00Z"],["2018-08-31T23:40:00Z","2018-08-31T23:25:00Z","2018-09-01T02:55:00Z","2018-09-01T00:05:00Z","2018-09-01T04:30:00Z","2018-08-31T23:15:00Z"],[29400,25500,-5100,26700,-1800,29700],[8.08333333333333,7.05,6.08333333333333,7.25,6.58333333333333,8],[1.01030927835052,1.00472813238771,-0.232876712328767,1.02298850574713,-0.0759493670886076,1.03125]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>dag<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n      <th>week<\/th>\n      <th>sleep_medication<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>to_sleep<\/th>\n      <th>total_sleep_time<\/th>\n      <th>total_in_bed<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,8,9,12,14,15,23]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-6b513dd14cdeecf82122" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6b513dd14cdeecf82122">{"x":{"filter":"none","data":[["1","2","3","4","5"],["21-041013","27-040314","27-040314","10-240713","27-040314"],["1","1","1","2","2"],["Onsdag","Onsdag","Lørdag","Lørdag","Søndag"],["2018-08-31T23:20:00Z","2018-08-31T23:30:00Z","2018-09-01T02:15:00Z","2018-09-01T01:30:00Z","2018-08-31T22:15:00Z"],["2018-08-31T23:45:00Z","2018-09-01T03:30:00Z","2018-09-01T04:30:00Z","2018-09-01T02:50:00Z","2018-09-01T04:00:00Z"],[130,30,30,5,30],["2018-09-01T01:55:00Z","2018-09-01T04:00:00Z","2018-09-01T05:00:00Z","2018-09-01T02:55:00Z","2018-09-01T04:30:00Z"],["2018-09-01T05:25:00Z","2018-09-01T04:00:00Z","2018-09-01T05:00:00Z","2018-09-01T01:30:00Z","2018-09-01T04:00:00Z"],["2018-09-01T06:45:00Z","2018-09-01T04:30:00Z","2018-09-01T05:30:00Z","2018-09-01T07:35:00Z","2018-09-01T04:50:00Z"],[7.41666666666667,5,3.25,6.08333333333333,6.58333333333333],[-55,-60,-15,-110,-90],[-0.123595505617978,-0.2,-0.0769230769230769,-0.301369863013699,-0.227848101265823],[395,90,45,30,90],[0,0,0,0,0],[3,2,3,4,3],[null,"12.00-12.30",null,null,"11.30-12.30"],["nej",null,null,null,null],["23.20 og 23.45","23.30 og 03.30","02.15 og 04.30","01.30 og 02.50","22.15 og 04.00"],["ethundredeogtredive","tredive","tredive","fem","tredive"],[1,3,1,2,1],[265,60,15,25,60],["05.25","04.00","05.00","01.30","04.00"],["06.45","04.30","05.30","07.35","04.50"],[2,2,2,3,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="follow" class="section level4">
+<h4>follow</h4>
+<p>Select only relevant variables from data</p>
+<pre class="r"><code>data_follow_sovn &lt;- select(data_follow_sovn, ID_NUM, week, dag, to_bed, light_off, sovn_sleep_latency, to_sleep, wake_up, get_up, total_in_bed, total_sleep_time, sovn_sleep_efficiency, total_wake, sleep_medication, contains(&quot;Sp9&quot;))</code></pre>
+<p>To bed and light off reversed</p>
+<pre class="r"><code>DT::datatable(filter(data_follow_sovn, to_bed &gt; light_off))</code></pre>
+<div id="htmlwidget-3ccd760af4b4d5382693" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3ccd760af4b4d5382693">{"x":{"filter":"none","data":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>Wake up before sleep time</p>
+<pre class="r"><code>DT::datatable(filter(data_follow_sovn, to_sleep &gt; wake_up))</code></pre>
+<div id="htmlwidget-ff49f3e188e11ebcda74" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ff49f3e188e11ebcda74">{"x":{"filter":"none","data":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>Get up before wake up</p>
+<pre class="r"><code>DT::datatable(filter(data_follow_sovn, wake_up &gt; get_up))</code></pre>
+<div id="htmlwidget-856651e0e3d8d34afa3c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-856651e0e3d8d34afa3c">{"x":{"filter":"none","data":[["1"],["25-140214"],["2"],["Søndag"],["2018-08-31T23:00:00Z"],["2018-08-31T23:00:00Z"],[15],["2018-08-31T23:15:00Z"],["2018-09-01T05:56:00Z"],["2018-09-01T05:50:00Z"],[6.83333333333333],[23880],[0.970731707317073],[18],[0],[2],["15.00-16.00"],["nej"],["23.00"],["femten"],[3],[3],["05.56"],["05.50"],[3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>Display data with sleep efficiency outside 0-100 %</p>
+<pre class="r"><code>DT::datatable(filter(data_follow_sovn, sovn_sleep_efficiency &gt; 1 | sovn_sleep_efficiency &lt; 0))</code></pre>
+<div id="htmlwidget-86a5a5083bd9e1531283" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-86a5a5083bd9e1531283">{"x":{"filter":"none","data":[["1"],["35-170315"],["1"],["Torsdag"],["2018-08-31T22:30:00Z"],["2018-08-31T22:30:00Z"],[150],["2018-09-01T01:00:00Z"],["2018-09-01T03:20:00Z"],["2018-09-01T07:00:00Z"],[8.5],[-6000],[-0.196078431372549],[390],[0],[3],["0"],["1 gl. rødvin"],["22.30"],["ethun0dredeoghalvtreds"],[1],[240],["03.20"],["07.00"],[1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ID_NUM<\/th>\n      <th>week<\/th>\n      <th>dag<\/th>\n      <th>to_bed<\/th>\n      <th>light_off<\/th>\n      <th>sovn_sleep_latency<\/th>\n      <th>to_sleep<\/th>\n      <th>wake_up<\/th>\n      <th>get_up<\/th>\n      <th>total_in_bed<\/th>\n      <th>total_sleep_time<\/th>\n      <th>sovn_sleep_efficiency<\/th>\n      <th>total_wake<\/th>\n      <th>sleep_medication<\/th>\n      <th>Sp9_spg_1<\/th>\n      <th>Sp9_spg_2<\/th>\n      <th>Sp9_spg_3<\/th>\n      <th>Sp9_spg_4<\/th>\n      <th>Sp9_spg_5<\/th>\n      <th>Sp9_spg_6<\/th>\n      <th>Sp9_spg_7<\/th>\n      <th>Sp9_spg_8<\/th>\n      <th>Sp9_spg_9<\/th>\n      <th>Sp9_spg_10<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[6,12,13,14,15,20,21,24]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
 </div>
 <div id="aggregering-af-variable" class="section level3">
 <h3>Aggregering af variable</h3>
+<p>Der er 6 registreringer fra søvndagbogen, hvor der er helt oplagte fejl i tidspunkterne:</p>
+<ul>
+<li>wake_up før to_sleep</li>
+<li>vågen længere tid om natten en total søvnperiode</li>
+</ul>
+<p>I det følgende ses bort fra disse 6 registreringer.</p>
+<pre class="r"><code>base_remove &lt;- which(data_base_sovn$sovn_sleep_efficiency&lt;0 | data_base_sovn$sovn_sleep_efficiency&gt;1)
+data_base_sovn &lt;- data_base_sovn[-base_remove, ]</code></pre>
+<pre class="r"><code>follow_remove &lt;- which(data_follow_sovn$sovn_sleep_efficiency&lt;0 | data_follow_sovn$sovn_sleep_efficiency&gt;1)
+data_follow_sovn &lt;- data_follow_sovn[-follow_remove, ]</code></pre>
 <pre class="r"><code>base_sovn_aggregate &lt;- group_by(data_base_sovn, ID_NUM) %&gt;%
   summarise(sleep_quality = mean(Sp9_spg_10, na.rm = T)
             , daytime_disfunc = mean(Sp9_spg_1, na.rm = T)
             , sovn_sleep_latency = mean(sovn_sleep_latency, na.rm = T)
+            , sovn_sleep_efficiency = mean(sovn_sleep_efficiency, na.rm = T)
+            , total_in_bed = mean(total_in_bed, na.rm = T)
+            , total_sleep = mean(total_sleep_time, na.rm = T)
+            , total_wake = mean(total_wake, na.rm = T)
             , sleep_medication_ave = mean(sleep_medication, na.rm = T))
 
 follow_sovn_aggregate &lt;- group_by(data_follow_sovn, ID_NUM) %&gt;%
   summarise(sleep_quality = mean(Sp9_spg_10, na.rm = T)
             , daytime_disfunc = mean(Sp9_spg_1, na.rm = T)
             , sovn_sleep_latency = mean(sovn_sleep_latency, na.rm = T)
+            , sovn_sleep_efficiency = mean(sovn_sleep_efficiency, na.rm = T)
+            , total_in_bed = mean(total_in_bed, na.rm = T)
+            , total_sleep = mean(total_sleep_time, na.rm = T)
+            , total_wake = mean(total_wake, na.rm = T)
             , sleep_medication_ave = mean(sleep_medication, na.rm = T))</code></pre>
 </div>
 </div>
 </div>
 <div id="export-cleaned-data" class="section level1">
 <h1>Export cleaned data</h1>
-<p><strong>Overvej hvilken version af join der skal benyttes for at sikre mod slåfejl i id nummer</strong> Below we use <code>inner_join()</code>!</p>
 <p>The following data sets are combined (<code>ID_NUM</code> used as key … remember to rename ID variable if necessary).</p>
 <p>Check that the correct number of variables are selected from each data set:</p>
 <ul>
@@ -2200,6 +2332,7 @@ follow_sovn_aggregate &lt;- group_by(data_follow_sovn, ID_NUM) %&gt;%
 <li>CES-D: sum score (1)</li>
 <li>Fysisk funktion: seven components and total (8)</li>
 <li>EQ-5D Helbredsspørgeskema (6)</li>
+<li>… many more …</li>
 </ul>
 <div id="extract-and-combine-baseline-data" class="section level2">
 <h2>Extract and combine baseline data</h2>
@@ -2233,35 +2366,50 @@ data_base &lt;- inner_join(data_base, base_sovn_aggregate)</code></pre>
 <pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
 <p>Display variables of cleaned data set</p>
 <pre class="r"><code>dim(data_base)</code></pre>
-<pre><code>## [1] 38 79</code></pre>
+<pre><code>## [1] 38 83</code></pre>
 <pre class="r"><code>names(data_base)</code></pre>
-<pre><code>##  [1] &quot;ID_NUM&quot;               &quot;Sex&quot;                  &quot;Age&quot;                 
-##  [4] &quot;Swol_joi&quot;             &quot;Tend_joi&quot;             &quot;DAS&quot;                 
-##  [7] &quot;HGB&quot;                  &quot;CRP&quot;                  &quot;Disease_dura&quot;        
-## [10] &quot;Comobid&quot;              &quot;Educa&quot;                &quot;Job&quot;                 
-## [13] &quot;Live_alone&quot;           &quot;Smoking&quot;              &quot;alcohol&quot;             
-## [16] &quot;koffein&quot;              &quot;time&quot;                 &quot;psqi1&quot;               
-## [19] &quot;psqi2&quot;                &quot;psqi3&quot;                &quot;psqi4&quot;               
-## [22] &quot;psqi5&quot;                &quot;psqi6&quot;                &quot;psqi7&quot;               
-## [25] &quot;psqi_total&quot;           &quot;ess_total&quot;            &quot;BRAF_phys&quot;           
-## [28] &quot;BRAF_living&quot;          &quot;BRAF_cog&quot;             &quot;BRAF_emo&quot;            
-## [31] &quot;BRAF_total&quot;           &quot;fys_akt&quot;              &quot;CES_D_total&quot;         
-## [34] &quot;haq1&quot;                 &quot;haq2&quot;                 &quot;haq3&quot;                
-## [37] &quot;haq4&quot;                 &quot;haq5&quot;                 &quot;haq6&quot;                
-## [40] &quot;haq7&quot;                 &quot;haq_total&quot;            &quot;smerter&quot;             
-## [43] &quot;traethed&quot;             &quot;eq_5d_1&quot;              &quot;eq_5d_2&quot;             
-## [46] &quot;eq_5d_3&quot;              &quot;eq_5d_4&quot;              &quot;eq_5d_5&quot;             
-## [49] &quot;eq_5d_6&quot;              &quot;TST&quot;                  &quot;Bedtime&quot;             
-## [52] &quot;sleep_effi&quot;           &quot;SO&quot;                   &quot;sleep_latency&quot;       
-## [55] &quot;REM_latency&quot;          &quot;WASO&quot;                 &quot;Arous&quot;               
-## [58] &quot;wake_time&quot;            &quot;N1&quot;                   &quot;N2&quot;                  
-## [61] &quot;N3&quot;                   &quot;REM&quot;                  &quot;AHI&quot;                 
-## [64] &quot;LM&quot;                   &quot;PLM&quot;                  &quot;OSA&quot;                 
-## [67] &quot;Mix_apnea&quot;            &quot;Cen_apnea&quot;            &quot;Hyp_nea&quot;             
-## [70] &quot;Desat&quot;                &quot;TST_num&quot;              &quot;SO_num&quot;              
-## [73] &quot;sleep_latency_num&quot;    &quot;REM_latency_num&quot;      &quot;wake_time_num&quot;       
-## [76] &quot;sleep_quality&quot;        &quot;daytime_disfunc&quot;      &quot;sovn_sleep_latency&quot;  
-## [79] &quot;sleep_medication_ave&quot;</code></pre>
+<pre><code>##  [1] &quot;ID_NUM&quot;                &quot;Sex&quot;                  
+##  [3] &quot;Age&quot;                   &quot;Swol_joi&quot;             
+##  [5] &quot;Tend_joi&quot;              &quot;DAS&quot;                  
+##  [7] &quot;HGB&quot;                   &quot;CRP&quot;                  
+##  [9] &quot;Disease_dura&quot;          &quot;Comobid&quot;              
+## [11] &quot;Educa&quot;                 &quot;Job&quot;                  
+## [13] &quot;Live_alone&quot;            &quot;Smoking&quot;              
+## [15] &quot;alcohol&quot;               &quot;koffein&quot;              
+## [17] &quot;time&quot;                  &quot;psqi1&quot;                
+## [19] &quot;psqi2&quot;                 &quot;psqi3&quot;                
+## [21] &quot;psqi4&quot;                 &quot;psqi5&quot;                
+## [23] &quot;psqi6&quot;                 &quot;psqi7&quot;                
+## [25] &quot;psqi_total&quot;            &quot;ess_total&quot;            
+## [27] &quot;BRAF_phys&quot;             &quot;BRAF_living&quot;          
+## [29] &quot;BRAF_cog&quot;              &quot;BRAF_emo&quot;             
+## [31] &quot;BRAF_total&quot;            &quot;fys_akt&quot;              
+## [33] &quot;CES_D_total&quot;           &quot;haq1&quot;                 
+## [35] &quot;haq2&quot;                  &quot;haq3&quot;                 
+## [37] &quot;haq4&quot;                  &quot;haq5&quot;                 
+## [39] &quot;haq6&quot;                  &quot;haq7&quot;                 
+## [41] &quot;haq_total&quot;             &quot;smerter&quot;              
+## [43] &quot;traethed&quot;              &quot;eq_5d_1&quot;              
+## [45] &quot;eq_5d_2&quot;               &quot;eq_5d_3&quot;              
+## [47] &quot;eq_5d_4&quot;               &quot;eq_5d_5&quot;              
+## [49] &quot;eq_5d_6&quot;               &quot;TST&quot;                  
+## [51] &quot;Bedtime&quot;               &quot;sleep_effi&quot;           
+## [53] &quot;SO&quot;                    &quot;sleep_latency&quot;        
+## [55] &quot;REM_latency&quot;           &quot;WASO&quot;                 
+## [57] &quot;Arous&quot;                 &quot;wake_time&quot;            
+## [59] &quot;N1&quot;                    &quot;N2&quot;                   
+## [61] &quot;N3&quot;                    &quot;REM&quot;                  
+## [63] &quot;AHI&quot;                   &quot;LM&quot;                   
+## [65] &quot;PLM&quot;                   &quot;OSA&quot;                  
+## [67] &quot;Mix_apnea&quot;             &quot;Cen_apnea&quot;            
+## [69] &quot;Hyp_nea&quot;               &quot;Desat&quot;                
+## [71] &quot;TST_num&quot;               &quot;SO_num&quot;               
+## [73] &quot;sleep_latency_num&quot;     &quot;REM_latency_num&quot;      
+## [75] &quot;wake_time_num&quot;         &quot;sleep_quality&quot;        
+## [77] &quot;daytime_disfunc&quot;       &quot;sovn_sleep_latency&quot;   
+## [79] &quot;sovn_sleep_efficiency&quot; &quot;total_in_bed&quot;         
+## [81] &quot;total_sleep&quot;           &quot;total_wake&quot;           
+## [83] &quot;sleep_medication_ave&quot;</code></pre>
 </div>
 <div id="extract-and-combine-follow-up-data" class="section level2">
 <h2>Extract and combine follow up data</h2>
@@ -2303,35 +2451,50 @@ data_follow &lt;- inner_join(data_follow, follow_sovn_aggregate)</code></pre>
 <p>Be careful to rename questions from EQ-5D from BA and FU to common name. <strong>Not done yet</strong>.</p>
 <pre class="r"><code>data_full &lt;- bind_rows(data_base, data_follow)
 dim(data_full)</code></pre>
-<pre><code>## [1] 76 79</code></pre>
+<pre><code>## [1] 76 83</code></pre>
 <pre class="r"><code>names(data_full)</code></pre>
-<pre><code>##  [1] &quot;ID_NUM&quot;               &quot;Sex&quot;                  &quot;Age&quot;                 
-##  [4] &quot;Swol_joi&quot;             &quot;Tend_joi&quot;             &quot;DAS&quot;                 
-##  [7] &quot;HGB&quot;                  &quot;CRP&quot;                  &quot;Disease_dura&quot;        
-## [10] &quot;Comobid&quot;              &quot;Educa&quot;                &quot;Job&quot;                 
-## [13] &quot;Live_alone&quot;           &quot;Smoking&quot;              &quot;alcohol&quot;             
-## [16] &quot;koffein&quot;              &quot;time&quot;                 &quot;psqi1&quot;               
-## [19] &quot;psqi2&quot;                &quot;psqi3&quot;                &quot;psqi4&quot;               
-## [22] &quot;psqi5&quot;                &quot;psqi6&quot;                &quot;psqi7&quot;               
-## [25] &quot;psqi_total&quot;           &quot;ess_total&quot;            &quot;BRAF_phys&quot;           
-## [28] &quot;BRAF_living&quot;          &quot;BRAF_cog&quot;             &quot;BRAF_emo&quot;            
-## [31] &quot;BRAF_total&quot;           &quot;fys_akt&quot;              &quot;CES_D_total&quot;         
-## [34] &quot;haq1&quot;                 &quot;haq2&quot;                 &quot;haq3&quot;                
-## [37] &quot;haq4&quot;                 &quot;haq5&quot;                 &quot;haq6&quot;                
-## [40] &quot;haq7&quot;                 &quot;haq_total&quot;            &quot;smerter&quot;             
-## [43] &quot;traethed&quot;             &quot;eq_5d_1&quot;              &quot;eq_5d_2&quot;             
-## [46] &quot;eq_5d_3&quot;              &quot;eq_5d_4&quot;              &quot;eq_5d_5&quot;             
-## [49] &quot;eq_5d_6&quot;              &quot;TST&quot;                  &quot;Bedtime&quot;             
-## [52] &quot;sleep_effi&quot;           &quot;SO&quot;                   &quot;sleep_latency&quot;       
-## [55] &quot;REM_latency&quot;          &quot;WASO&quot;                 &quot;Arous&quot;               
-## [58] &quot;wake_time&quot;            &quot;N1&quot;                   &quot;N2&quot;                  
-## [61] &quot;N3&quot;                   &quot;REM&quot;                  &quot;AHI&quot;                 
-## [64] &quot;LM&quot;                   &quot;PLM&quot;                  &quot;OSA&quot;                 
-## [67] &quot;Mix_apnea&quot;            &quot;Cen_apnea&quot;            &quot;Hyp_nea&quot;             
-## [70] &quot;Desat&quot;                &quot;TST_num&quot;              &quot;SO_num&quot;              
-## [73] &quot;sleep_latency_num&quot;    &quot;REM_latency_num&quot;      &quot;wake_time_num&quot;       
-## [76] &quot;sleep_quality&quot;        &quot;daytime_disfunc&quot;      &quot;sovn_sleep_latency&quot;  
-## [79] &quot;sleep_medication_ave&quot;</code></pre>
+<pre><code>##  [1] &quot;ID_NUM&quot;                &quot;Sex&quot;                  
+##  [3] &quot;Age&quot;                   &quot;Swol_joi&quot;             
+##  [5] &quot;Tend_joi&quot;              &quot;DAS&quot;                  
+##  [7] &quot;HGB&quot;                   &quot;CRP&quot;                  
+##  [9] &quot;Disease_dura&quot;          &quot;Comobid&quot;              
+## [11] &quot;Educa&quot;                 &quot;Job&quot;                  
+## [13] &quot;Live_alone&quot;            &quot;Smoking&quot;              
+## [15] &quot;alcohol&quot;               &quot;koffein&quot;              
+## [17] &quot;time&quot;                  &quot;psqi1&quot;                
+## [19] &quot;psqi2&quot;                 &quot;psqi3&quot;                
+## [21] &quot;psqi4&quot;                 &quot;psqi5&quot;                
+## [23] &quot;psqi6&quot;                 &quot;psqi7&quot;                
+## [25] &quot;psqi_total&quot;            &quot;ess_total&quot;            
+## [27] &quot;BRAF_phys&quot;             &quot;BRAF_living&quot;          
+## [29] &quot;BRAF_cog&quot;              &quot;BRAF_emo&quot;             
+## [31] &quot;BRAF_total&quot;            &quot;fys_akt&quot;              
+## [33] &quot;CES_D_total&quot;           &quot;haq1&quot;                 
+## [35] &quot;haq2&quot;                  &quot;haq3&quot;                 
+## [37] &quot;haq4&quot;                  &quot;haq5&quot;                 
+## [39] &quot;haq6&quot;                  &quot;haq7&quot;                 
+## [41] &quot;haq_total&quot;             &quot;smerter&quot;              
+## [43] &quot;traethed&quot;              &quot;eq_5d_1&quot;              
+## [45] &quot;eq_5d_2&quot;               &quot;eq_5d_3&quot;              
+## [47] &quot;eq_5d_4&quot;               &quot;eq_5d_5&quot;              
+## [49] &quot;eq_5d_6&quot;               &quot;TST&quot;                  
+## [51] &quot;Bedtime&quot;               &quot;sleep_effi&quot;           
+## [53] &quot;SO&quot;                    &quot;sleep_latency&quot;        
+## [55] &quot;REM_latency&quot;           &quot;WASO&quot;                 
+## [57] &quot;Arous&quot;                 &quot;wake_time&quot;            
+## [59] &quot;N1&quot;                    &quot;N2&quot;                   
+## [61] &quot;N3&quot;                    &quot;REM&quot;                  
+## [63] &quot;AHI&quot;                   &quot;LM&quot;                   
+## [65] &quot;PLM&quot;                   &quot;OSA&quot;                  
+## [67] &quot;Mix_apnea&quot;             &quot;Cen_apnea&quot;            
+## [69] &quot;Hyp_nea&quot;               &quot;Desat&quot;                
+## [71] &quot;TST_num&quot;               &quot;SO_num&quot;               
+## [73] &quot;sleep_latency_num&quot;     &quot;REM_latency_num&quot;      
+## [75] &quot;wake_time_num&quot;         &quot;sleep_quality&quot;        
+## [77] &quot;daytime_disfunc&quot;       &quot;sovn_sleep_latency&quot;   
+## [79] &quot;sovn_sleep_efficiency&quot; &quot;total_in_bed&quot;         
+## [81] &quot;total_sleep&quot;           &quot;total_wake&quot;           
+## [83] &quot;sleep_medication_ave&quot;</code></pre>
 <pre class="r"><code>data_full &lt;- left_join(data_full, data_rand_list)</code></pre>
 <pre><code>## Joining, by = &quot;ID_NUM&quot;</code></pre>
 <pre class="r"><code>data_full &lt;- left_join(data_full, data_watt0)</code></pre>
